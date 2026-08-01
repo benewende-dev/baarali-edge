@@ -73,7 +73,10 @@ pourront pas produire.
 **À faire par toi (humain) :**
 - [x] Profil Devpost complet (spécialité, compétences, admissibilité, bio)
 - [ ] S'inscrire au challenge (« Participez au hackathon » → formulaire *Registre*)
-- [ ] Récupérer le **`team_id`** → remplacer `TODO-REGISTER-ON-ADTF-PORTAL` dans `metadata.json`
+- [ ] **`team_id`** — vérifié le 1er août : **aucun champ `team_id` n'existe**, ni à l'inscription,
+      ni dans « Additional info », et le « portail ADTF » dont parle le gabarit n'existe pas. On
+      pose donc `baarali-edge` et on demande confirmation sur le Discord. Ne pas laisser la valeur
+      d'exemple : leur liste de contrôle refuse les valeurs par défaut.
 - [ ] **Demander les 5 heures de crédits GPU offertes par Udutech** — c'est gratuit, ça met du
       temps à être accordé, et c'est ce qui rendra un affinage possible sans dépenser un franc
 - [ ] Récupérer le **jeu de validation du domaine Entreprise/PME** (onglet Ressources) — les
@@ -156,8 +159,17 @@ l'emballage du travail, c'en est une partie notée.*
 
 ## Étape 6 — Soumettre
 
-- [ ] Dépôt **public** sur GitHub
+Le formulaire Devpost (« Additional info », relevé le 1er août) demande exactement :
+`Project Report Public URL on Github` · `Test Prompt 1` · `Test Prompt 2` · `Problem Domain` ·
+`Self Reported Sperf` · `Self Reported Seff`. **Rien d'autre** — la justesse, ce sont eux qui la
+mesurent. Donc toute la page se remplit avec un seul `submission.json` et l'URL du dépôt public.
+
+⚠️ Les deux prompts sont saisis **deux fois** (Devpost + `metadata.json`) : ils doivent être
+rigoureusement identiques, sans quoi l'audit compare deux choses différentes.
+
+- [ ] Dépôt **public** sur GitHub (`baarali-edge` seul — jamais Baarali-v1)
 - [ ] Passer la liste de contrôle du gabarit officiel, ligne par ligne
+- [ ] Étapes 3, 4 et 5 du brouillon Devpost remplies (histoire, vidéo, scores)
 - [ ] Soumettre **avant le 25 août 6 h 45 GMT**
 
 ---
