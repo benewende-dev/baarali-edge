@@ -1,42 +1,84 @@
 # Plan — Africa Deep Tech Challenge 2026 (Laptop LLM)
 
-**Échéance officielle : 24 août 2026, 23 h 45 PDT** = **25 août, 06 h 45 à Abidjan**.
+**Échéance officielle : 25 août 2026 à 6 h 45 GMT** — Abidjan **est** en GMT, donc 6 h 45 du matin
+ici. La dernière nuit utile est celle du 24 au 25 ; ne pas compter dessus.
 Objectif interne : **tout bouclé le 15 août**, les 10 jours restants servent de marge.
 
 Gate 2 (audit technique) : 8–29 septembre. Gate 3 (défense orale) : 17 octobre.
 
 ---
 
-## Ce qui décide de la note (relu dans le code du profileur, pas dans la brochure)
+## Ce qui décide de la note
+
+*(relu dans le règlement officiel Devpost et dans le code du profileur — pas dans la presse, qui
+se trompe sur trois points : voir « Ce qui n'existe pas » plus bas)*
 
 ```
 S = 0,50 · Justesse + 0,30 · Débit + 0,20 · Légèreté − 10 (si > 85 °C)
+    + jusqu'à 10 points de bonus « cas d'utilisation africain »
 ```
 
 | Axe | Comment c'est mesuré, réellement |
 |---|---|
-| Justesse (50 %) | `lm-evaluation-harness` sur le GGUF **quantifié**, `n_ctx = 2048`, via `llama-cpp-python`. Défaut de fumée : `arc_easy`, 50 questions. L'audit utilise un sous-ensemble de validation **caché**. |
-| Débit (30 %) | `llama-bench -p 512 -n 128 -ngl 0`. **`-ngl 0` = carte graphique interdite, processeur seul.** Score = 100 × (t/s ÷ 15). |
+| Justesse (50 %) | Mélange de **références automatisées** (`lm-evaluation-harness` sur le GGUF quantifié, `n_ctx = 2048`, jeu de validation caché) **et d'une évaluation qualitative par le jury** — qui inclut explicitement **la qualité de la documentation**. Le `REPORT.md` est donc *dans* les 50 %. |
+| Débit (30 %) | `llama-bench -p 512 -n 128 -ngl 0` (**carte graphique interdite, processeur seul**). Score = 100 × (t/s ÷ **t/s de la meilleure soumission**) — barème **relatif**, pas une référence fixe. |
 | Légèreté (20 %) | Pic de RSS échantillonné toutes les 100 ms sur le processus **et ses enfants**. Score = 100 × (7 Go − pic) ÷ 7 Go. |
-| Éliminatoire | Dépassement mémoire ou plantage pendant l'audit. |
+| Bonus africain | Jusqu'à **+10 points** au score total, selon l'applicabilité à un cas d'usage africain réel. |
+| Éliminatoire | Dépassement mémoire (OOM) ou plantage pendant l'audit. |
 
-**Conséquence stratégique** : 50 % de la note récompense la petitesse et la vitesse. Le point
-d'équilibre est **1,5 à 4 milliards de paramètres**, pas 7. À vérifier par la mesure (étape 1),
-pas à supposer.
+**Prix** : 8 000 / 4 000 / 3 000 $ **au classement**, plus 1 500 $ « meilleure étude de cas
+africaine », plus des bourses en crédits GPU (10 finalistes × 250 $, 20 demi-finalistes × 50 $).
+Total en espèces affiché : 16 500 $.
 
-**Bonus cumulables** : +10 % profil low-cost · +15 % langue africaine · jusqu'à +10 pts usage
-africain réel. Prix séparés : meilleure intégration (3 000 $), meilleure localisation (1 500 $).
+### Ce qui n'existe pas (et que la presse annonçait)
+
+- **Aucun multiplicateur** « +15 % langue africaine » ni « +10 % portable low-cost ». Le seul
+  bonus du règlement est celui, en points, du cas d'utilisation africain.
+- **Aucun prix « meilleure intégration »**. La 3ᵉ place vaut 3 000 $, c'est tout.
+- **Aucune référence fixe de 15 t/s** : le débit est noté par rapport à la meilleure soumission.
+
+---
+
+## La stratégie, en une phrase
+
+**On vise le classement**, pas un prix latéral. On gagne les axes gagnables (débit, légèreté,
+bonus africain), on reste honorable sur celui qui ne l'est pas (justesse brute).
+
+### L'arithmétique qui décide de la taille du modèle
+
+En supposant que la meilleure soumission tourne autour de 40 t/s sur le portable de référence :
+
+| | 7 Md | 3 Md | 1,5 Md |
+|---|---|---|---|
+| Débit (30 %) | ~11 | ~25 | ~50 |
+| Légèreté (20 %) | 29 | 63 | 77 |
+| **Écart cumulé vs 7 Md** | — | **+11 pts** | **+21 pts** |
+
+Pour rattraper, un 7 Md devrait être **22 points plus juste sur 100**. Il ne l'est pas.
+Entre **3 et 1,5 milliard, c'est trop serré pour trancher sur le papier** : c'est l'objet de
+l'étape 1, qui n'est donc pas une précaution mais **la décision elle-même**.
+
+### Où sont les 10 points les moins chers du plateau
+
+Gagner 10 points par la justesse demanderait +20 points de justesse (poids 0,50) ; par le débit,
+il faudrait tripler la vitesse. Par le **bonus africain**, il suffit de prouver un usage réel —
+canal USSD déjà en service, documents de PME francophones, contexte de coupures et de data
+comptée. C'est ce que la plupart des concurrents, qui optimisent des modèles sans terrain, ne
+pourront pas produire.
 
 ---
 
 ## Étape 0 — Inscriptions et outillage
 
-**À faire par toi (humain, 20 min) :**
-- [ ] S'inscrire sur [adtc-2026.devpost.com](https://adtc-2026.devpost.com) et sur le portail ADTF
+**À faire par toi (humain) :**
+- [x] Profil Devpost complet (spécialité, compétences, admissibilité, bio)
+- [ ] S'inscrire au challenge (« Participez au hackathon » → formulaire *Registre*)
 - [ ] Récupérer le **`team_id`** → remplacer `TODO-REGISTER-ON-ADTF-PORTAL` dans `metadata.json`
-- [ ] Renseigner le nom légal complet dans `metadata.json`
+- [ ] **Demander les 5 heures de crédits GPU offertes par Udutech** — c'est gratuit, ça met du
+      temps à être accordé, et c'est ce qui rendra un affinage possible sans dépenser un franc
+- [ ] Récupérer le **jeu de validation du domaine Entreprise/PME** (onglet Ressources) — les
+      organisateurs en fournissent un par domaine : on mesurera dessus, pas sur un test générique
 - [ ] Créer un compte Hugging Face (hébergement public des poids, gratuit)
-- [ ] Lire les règles d'éligibilité complètes sur Devpost et confirmer la résidence (Abidjan = OK)
 
 **Outillage machine :**
 - [ ] `brew install llama.cpp` → fournit `llama-bench`, exigé par le profileur
@@ -50,16 +92,16 @@ ne tourne** — ni Docker/Colima, ni Ollama, ni serveur Next.js. Un pic parasite
 
 ---
 
-## Étape 1 — Mesurer avant de choisir *(le cœur du travail)*
+## Étape 1 — Mesurer avant de choisir *(le cœur du travail, et la décision principale)*
 
 On ne choisit pas le modèle de départ par réputation : on le **note** avec le profileur officiel.
 
-- [ ] Sélectionner 5 socles ouverts, licence permissive, dans la fourchette 1,5–4 Md de paramètres
-- [ ] Pour chacun : télécharger le GGUF Q4_K_M, lancer le profileur **complet** (justesse comprise)
-- [ ] Consigner dans `bench/resultats.md` : justesse, t/s, pic RAM, température, **score total calculé**
-- [ ] **Décision documentée** : le socle retenu, et pourquoi les autres sont écartés
+- [ ] Sélectionner 5 socles ouverts, licence permissive, couvrant **1 Md à 4 Md** de paramètres
+- [ ] Pour chacun : GGUF Q4_K_M, profileur **complet** (justesse comprise), 3 exécutions, médiane
+- [ ] Consigner dans `bench/resultats.md` : justesse, t/s, pic RAM, température, **score total**
+- [ ] **Décision documentée** : le socle retenu, et pourquoi chaque autre est écarté
 
-*Sortie : un tableau de scores réels. C'est aussi la moitié du `REPORT.md`, écrite d'avance.*
+*Sortie : un tableau de scores réels — et la moitié du `REPORT.md`, écrite d'avance.*
 
 ---
 
@@ -67,24 +109,25 @@ On ne choisit pas le modèle de départ par réputation : on le **note** avec le
 
 - [ ] Comparer Q4_K_M / Q5_K_M / IQ4_XS sur le socle retenu (l'IQ4 pèse moins pour une qualité voisine)
 - [ ] Essayer une quantification guidée par **matrice d'importance** (*imatrix*) calibrée sur du
-      texte d'entreprise francophone — même taille, meilleure justesse. C'est une contribution
-      technique défendable devant le jury.
+      texte d'entreprise francophone — même taille, meilleure justesse. Contribution technique
+      défendable devant le jury, et elle joue sur les deux axes à la fois.
 - [ ] Retenir le meilleur score total mesuré, pas le meilleur ressenti
 
 ---
 
-## Étape 3 — Le dioula *(bonus +15 %, et le prix « meilleure localisation »)*
+## Étape 3 — Le cas d'usage africain *(jusqu'à 10 points, et 1 500 $)*
 
-**Garde-fou avant de promettre quoi que ce soit :**
-- [ ] Vérifier **ce qui existe réellement** comme données ouvertes en dioula/bambara. Si la
-      réponse est « rien d'exploitable en deux semaines », on retire la revendication du
-      `metadata.json` plutôt que de la revendiquer à vide — une revendication non tenue se voit
-      à l'audit et coûte plus qu'elle ne rapporte.
-- [ ] Affinage LoRA **additif** (louer un GPU quelques heures, ~10 à 30 $ — la machine locale ne
-      peut pas entraîner)
-- [ ] **Barrière de sécurité** : re-mesurer la justesse en anglais **avant/après**. Le bonus vaut
-      +15 % ; s'il coûte plus de 15 % de justesse, il fait perdre des points. On garde l'affinage
-      **seulement si** la mesure le valide.
+Ce n'est pas une décoration : c'est l'équivalent de 20 points de justesse, pour bien moins d'effort.
+
+- [ ] Écrire l'étude de cas **à partir du réel** : PME abidjanaise, coupures, data comptée,
+      documents qui ne peuvent pas sortir de l'entreprise. Chiffres et situations vraies.
+- [ ] Démontrer la **portée sans forfait** : le canal USSD, filmé depuis un téléphone à touches
+- [ ] **Dioula — sous condition.** Vérifier d'abord ce qui existe comme données ouvertes
+      exploitables. Ça n'apporte plus de multiplicateur (il n'existe pas) : ça nourrit le bonus
+      des 10 points. Donc on n'y consacre du temps **que si** l'affinage ne coûte pas de justesse
+      ailleurs — mesure avant/après obligatoire, avec les crédits GPU d'Udutech.
+- [ ] Si la mesure ne suit pas : retirer `dyu` de `language_scope`. Une revendication non tenue
+      se voit à l'audit et coûte plus qu'elle ne rapporte.
 
 ---
 
@@ -100,11 +143,14 @@ On ne choisit pas le modèle de départ par réputation : on le **note** avec le
 
 ## Étape 5 — Le rapport et la vidéo
 
-- [ ] `REPORT.md` : problème, décisions de conception, contraintes, **chiffres mesurés** (pas d'estimations)
-- [ ] Vidéo de **2 minutes maximum** : le modèle tourne hors ligne sur le portable, puis la démo
-      Baarali (lecture de documents, réponse **citée**, canal USSD depuis un téléphone à touches)
+*Rappel : la qualité de la documentation est comptée dans les 50 % de justesse. Ce n'est pas
+l'emballage du travail, c'en est une partie notée.*
+
+- [ ] `REPORT.md` : problème, décisions de conception, contraintes, **chiffres mesurés**
+- [ ] Vidéo de **2 minutes maximum** : le modèle tourne hors ligne sur le portable, puis la
+      démonstration (lecture de documents, réponse **citée**, USSD depuis un téléphone à touches)
 - [ ] Relire les 2 `test_prompts` : le jury en ajoute 2 cachés dans le même domaine — nos prompts
-      doivent être représentatifs, pas taillés sur mesure (l'anti-surapprentissage est explicite)
+      doivent être **représentatifs**, pas taillés sur mesure (l'anti-surapprentissage est explicite)
 
 ---
 
@@ -112,15 +158,14 @@ On ne choisit pas le modèle de départ par réputation : on le **note** avec le
 
 - [ ] Dépôt **public** sur GitHub
 - [ ] Passer la liste de contrôle du gabarit officiel, ligne par ligne
-- [ ] Soumettre l'URL sur Devpost **avant le 24 août 23 h 45 PDT**
+- [ ] Soumettre **avant le 25 août 6 h 45 GMT**
 
 ---
 
 ## Ce qu'on ne fait pas
 
-- **Baarali-v1 n'est pas ouvert.** C'est le produit commercial ; il apparaît en démonstration
-  dans la vidéo, son code reste privé. Ce dépôt-ci est autonome.
-- **Pas d'entraînement depuis zéro.** Deux semaines, 8 Go de RAM, aucun GPU : on part d'un socle
-  ouvert, on le compresse et on l'adapte. C'est ce que le règlement autorise explicitement.
-- **Aucun chiffre non mesuré dans le rapport.** Le jury re-mesure tout à l'étape 2 ; un écart
-  entre nos chiffres et les leurs est le plus court chemin vers l'élimination.
+- **Baarali-v1 n'est pas ouvert.** C'est le produit privé ; il sert de banc de démonstration dans
+  la vidéo, son code reste privé et ce dépôt-ci est autonome.
+- **Pas d'entraînement depuis zéro.** On part d'un socle ouvert, on le compresse et on l'adapte.
+- **Aucun chiffre non mesuré dans le rapport.** Le jury re-mesure tout à l'audit : un écart entre
+  nos chiffres et les leurs est le plus court chemin vers l'élimination.

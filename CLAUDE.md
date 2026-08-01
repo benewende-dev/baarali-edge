@@ -60,4 +60,6 @@ adtc-profiler run --submission . --mode participant --output submission.json --s
 | Dépassement mémoire pendant l'audit | **disqualification automatique** — garder de la marge sous les 7 Go, pas frôler |
 | Chauffe > 85 °C | −10 points. Mesurer sur une machine posée sur une surface dure, pas sur un lit |
 | `llama-cpp-python` sur Python 3.14 | compile depuis les sources ; utiliser un environnement **3.11/3.12** |
-| Bonus langue africaine pris sans mesure | +15 % ne compense pas une chute de justesse plus grande. Mesurer **avant/après** l'affinage |
+| Croire aux bonus annoncés par la presse | **Ils n'existent pas** : ni « +15 % langue africaine », ni « +10 % low-cost », ni prix « meilleure intégration ». Le règlement ne connaît qu'un bonus de **10 points** pour le cas d'usage africain. Vérifier dans le règlement, jamais dans un article |
+| Débit cru noté sur une référence fixe | il est noté **par rapport à la meilleure soumission** : plus quelqu'un d'autre est rapide, plus notre score baisse. La petitesse paie donc davantage qu'un barème fixe ne le laisserait croire |
+| Documentation traitée comme de l'emballage | la qualité du `REPORT.md` est comptée **dans les 50 % de justesse**, pas à côté |
