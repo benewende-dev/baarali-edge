@@ -90,6 +90,55 @@ Two honest notes on these numbers:
 
 ---
 
+## Domain fit — measured against what this track actually asks
+
+`arc_easy` is an English general-knowledge quiz. It is what the profiler scores, and we report it
+above, but it is not what this domain is. The official definition of `corporate_enterprise` is
+*knowledge-work productivity: **summarization, drafting, and analysis** for small and medium
+enterprises* — and half of `S_acc` is a judge reading answers, not a benchmark.
+
+So we built a second control for that, [`bench/redaction.py`](bench/redaction.py): 15 tasks, five
+per genre, French and English, spread across eight West and Central African cities plus tasks with
+no location at all — a site-meeting record from Ouagadougou, an HR notice from Dakar, a client
+email thread from Accra, a clinic report from Cotonou, a payment reminder from Abidjan, a job
+advert for Bamako, a service notice from Lomé, a contract amendment from Douala, a quotation, a
+contract excerpt, a dashboard, a priority call. Breadth is deliberate: the rules generate the two
+hidden prompts specifically to detect overfitting, so a control tied to one city would measure the
+very fault it is meant to guard against.
+
+Scoring uses no human judgement. Each task carries its own checks — do the source facts survive
+the summary, is the imposed register kept, is the bullet count and word limit respected, is the
+answer in the language of the question, and above all **is any number invented**. A hand-written
+ideal answer scores 100 % on all 15, so the ceiling is reachable and every gap below it belongs to
+the model.
+
+| | penalty 1.00 *(chain default)* | 1.05 *(shipped)* | 1.10 |
+|---|---|---|---|
+| Summarising, 5 tasks | 31/33 | 30/33 | 30/33 |
+| Drafting, 5 tasks | 34/36 | 34/36 | 35/36 |
+| Analysis, 5 tasks | 10/12 | 10/12 | 10/12 |
+| **Mean per task** | **91 %** | **90 %** | **91 %** |
+| **Invented numbers** | **0** | **0** | **0** |
+
+Zero fabricated figures across 45 pieces of writing is the result we would most want to be true,
+and it is the one we checked hardest — every number of three digits or more in every output was
+matched against its source.
+
+What the control found that the benchmark could not:
+
+- **It drops a fact to make room for a comment.** Held to exactly three bullets on a clinic
+  report, it discarded the 71 % bed-occupancy figure in favour of "requires immediate
+  intervention". Summarising a client thread, it never quoted the order reference.
+- **It ranks urgency badly.** Given four tasks to order, it placed a public tender closing in
+  three days last, labelled "low urgency", having essentially restated the order of the question.
+- **It confuses accounting definitions**, computing gross margin as revenue minus fixed costs.
+
+These are limits of the base model, not of the sampling settings, and they are stated here rather
+than left for the audit to find. Full transcripts, criterion by criterion:
+[`bench/copies/redaction.md`](bench/copies/redaction.md).
+
+---
+
 ## African use case
 
 The claim behind `african_alpha_claim: true` is set out in full, with sources, in

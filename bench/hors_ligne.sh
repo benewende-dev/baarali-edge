@@ -27,7 +27,7 @@ command -v llama-cli > /dev/null || { echo "llama-cli absent : brew install llam
 # `-st` est indispensable : sans lui, `-no-cnv` génère puis **attend un second
 # tour**, et le processus ne rend jamais la main. Constaté à la mesure — un run
 # resté 17 minutes en vie pour 48 jetons.
-ARGS=(-ngl 0 --temp 0 --repeat-penalty 1.10 -n 48 -no-cnv -st --no-warmup)
+ARGS=(-ngl 0 --temp 0 --repeat-penalty 1.05 -n 48 -no-cnv -st --no-warmup)
 
 inference() {
   llama-cli -m "$MODELE" "${ARGS[@]}" -p "$INVITE" > /dev/null 2>&1 &

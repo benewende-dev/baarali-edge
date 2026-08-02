@@ -62,7 +62,7 @@ ECRAN_MAX = 182
 # La pénalité de répétition retenue à l'issue de `bench/penalite.py`. Elle compte
 # doublement ici : hors ligne et sans écran de secours, une boucle n'est pas une
 # réponse laide, c'est une session perdue et du crédit dépensé pour rien.
-PENALITE = 1.10
+PENALITE = 1.05
 
 # Deux consignes, parce que la contrainte des 182 caractères porte sur **le
 # canal, pas sur le raisonnement**. La première version de ce fichier demandait

@@ -67,17 +67,26 @@ Paying for Q5 bought no accuracy at all — 0.670, identical, for 25 % more weig
 ## Recommended inference settings
 
 ```bash
-llama-cli -m Qwen3.5-2B-IQ4_XS.gguf -ngl 0 --temp 0 --repeat-penalty 1.10
+llama-cli -m Qwen3.5-2B-IQ4_XS.gguf -ngl 0 --temp 0 --repeat-penalty 1.05
 ```
 
-`--repeat-penalty 1.10` is not a preference. On inputs outside its competence this model does not
+`--repeat-penalty 1.05` is not a preference. On inputs outside its competence this model does not
 decline — it repeats one phrase until the token budget runs out, and llama.cpp applies **no
-repetition penalty by default**. Measured across 23 probes × 5 values, 1.10 is the smallest value
-that eliminates the failure on every trigger we found, at **zero measured cost** on an 18-item
-domain control (6/6 single-step, 9/12 multi-step — identical to no penalty). At 1.15 multi-step
-reasoning collapses to 4/12.
+repetition penalty by default**.
 
-Sweep and transcripts: [`bench/copies/penalite-repetition.md`](https://github.com/benewende-dev/baarali-edge/blob/main/bench/copies/penalite-repetition.md).
+The value was measured twice, and the second measurement overturned the first. An arithmetic
+control of 18 items pointed at 1.10. A second control of 15 summarisation, drafting and analysis
+tasks — the genre this model is actually for — showed that 1.10 makes it answer a contract-penalty
+question with **63,450 FCFA instead of 270,000**, inventing a formula to get there. Reproducible at
+temperature 0.
+
+1.05 keeps that answer correct, still removes the degeneration (diversity 0.60 → 0.99 on the case
+that showed it), and costs one criterion out of 81 against no penalty at all. Above 1.10 the
+collapse is not subtle: multi-step reasoning falls from 9/12 to 4/12 at 1.15.
+
+Sweeps and full transcripts:
+[`bench/copies/redaction.md`](https://github.com/benewende-dev/baarali-edge/blob/main/bench/copies/redaction.md),
+[`bench/copies/penalite-repetition.md`](https://github.com/benewende-dev/baarali-edge/blob/main/bench/copies/penalite-repetition.md).
 
 ## Known limitations, measured
 
@@ -86,6 +95,17 @@ Sweep and transcripts: [`bench/copies/penalite-repetition.md`](https://github.co
   removed from the submission's `language_scope`. Working languages are French and English.
 - **Rounding to a *week begun*** — a common clause in West African supply contracts — is wrong at
   every configuration we tested.
+- **It drops a fact to make room for a comment.** Told to summarise a clinic report in exactly
+  three bullets, it sacrificed the 71 % bed-occupancy figure to write "requires immediate
+  intervention". Summarising a client thread, it never quoted the order reference.
+- **It ranks urgency badly.** Asked to order four tasks, it placed a public tender closing in three
+  days last, as "low urgency" — it had restated the order of the question with justifications
+  attached.
+- **It confuses accounting definitions**, computing gross margin as revenue minus fixed costs.
+
+None of these depend on sampling settings; they are in the base model. All three were found by
+[`bench/redaction.py`](https://github.com/benewende-dev/baarali-edge/blob/main/bench/redaction.py),
+a 15-task control scored without human judgement.
 - 2 B parameters is a deliberate trade. The scoring function puts 50 % of its weight on throughput
   and memory; a larger model would have to be ~22 accuracy points better to break even, and it is
   not.

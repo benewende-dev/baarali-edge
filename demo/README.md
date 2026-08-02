@@ -48,7 +48,8 @@ an empty extract falls back to the full reasoning; and it emphasises its conclus
 
 ## Sampling settings, and why
 
-The handler generates with `repeat_penalty = 1.10`, the value chosen in
-[`../bench/copies/penalite-repetition.md`](../bench/copies/penalite-repetition.md). It matters
+The handler generates with `repeat_penalty = 1.05`, the value settled in
+[`../bench/copies/redaction.md`](../bench/copies/redaction.md) after an earlier control had
+pointed at 1.10 and turned out to be measuring the wrong thing. It matters
 more on this channel than anywhere else: offline, on a handset, with no second opinion available
 and airtime being spent, a degenerate loop is not an ugly answer — it is a lost session.

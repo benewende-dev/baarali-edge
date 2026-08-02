@@ -271,3 +271,113 @@ l'interface au lieu de l'espérer.
 `curl` seul, URL publique, aucun jeton — exactement ce dont dispose un évaluateur.
 
 Poids publiés : <https://huggingface.co/Benewende-dev/baarali-edge-2b>
+
+---
+
+# Étape 5 — le bon thermomètre, et ce qu'il a renversé
+
+## Pourquoi tout ce qui précède mesurait à côté
+
+La définition officielle du domaine `corporate_enterprise`, relevée sur la page du concours,
+tient en une ligne :
+
+> *knowledge-work productivity: **summarization, drafting, and analysis** for small and medium
+> enterprises.*
+
+Résumer. Rédiger. Analyser. **Pas calculer.** Et la justesse est *« la moyenne pondérée de la
+réponse du modèle, notée de 0 à 100 par un juge »* : les deux prompts cachés seront de ce
+genre-là.
+
+Nos dix-huit énoncés de contrôle étaient tous arithmétiques. Un thermomètre très soigné pour une
+fièvre qui n'est pas celle qu'on nous prendra. Et le jeu de validation ne viendra pas nous
+renseigner : `adtc_profiler/accuracy.py` dit *« the full hidden 30 % validation subset distributed
+by judges »* — distribué **aux juges**. Il n'y a rien à télécharger. La parade n'est donc pas de
+deviner, c'est **d'être large**.
+
+## Le contrôle construit pour ça
+
+`bench/redaction.py` : quinze épreuves, cinq par genre, français et anglais, huit villes d'Afrique
+de l'Ouest et du Centre plus des énoncés sans lieu — compte rendu de chantier à Ouagadougou, note
+RH à Dakar, fil de courriels à Accra, rapport sanitaire à Cotonou, relance à Abidjan, annonce
+d'emploi à Bamako, note de service à Lomé, avenant à Douala, devis, extrait de contrat, tableau de
+bord, arbitrage de priorités. Un contrôle collé à une seule ville mesurerait exactement le défaut
+que le règlement cherche à sanctionner.
+
+La notation reste vérifiable sans avis humain : présence des faits de la source, registre imposé,
+couverture d'une liste pour les analyses ouvertes, ordre de priorité, nombre de puces, longueur,
+langue, et surtout **absence de nombre inventé** — tout nombre d'au moins trois chiffres qui
+n'est pas dans la source est signalé. Barème vérifié avant usage : une copie idéale écrite à la
+main atteint **15/15 épreuves à 100 %**, donc le plafond est atteignable et tout écart est
+imputable au modèle.
+
+Deux angles morts du barème ont été corrigés au premier passage, parce qu'ils notaient
+l'orthographe plutôt que la compréhension : « quinze jours » comptait comme une omission de
+« 15 jours », et « sans modification des conditions financières » comme une omission de
+« inchangées ». Un troisième était plus instructif — la liste de `manques-decision` notait *ma*
+réponse et pas *une bonne* réponse : le modèle citait le périmètre, la validité des devis et la
+base de comparaison, des manques parfaitement légitimes que j'avais oubliés.
+
+## Résultats — le contrôle rédactionnel ne départage pas
+
+| | pen 1,00 *(défaut officiel)* | pen 1,05 | pen 1,10 |
+|---|---|---|---|
+| résumer, 5 épreuves | 31/33 (94 %) | 30/33 (91 %) | 30/33 (91 %) |
+| rédiger, 5 épreuves | 34/36 (94 %) | 34/36 (94 %) | 35/36 (97 %) |
+| analyser, 5 épreuves | 10/12 (83 %) | 10/12 (83 %) | 10/12 (83 %) |
+| **moyenne par épreuve** | **91 %** | **90 %** | **91 %** |
+| **nombres inventés** | **0** | **0** | **0** |
+
+Trois valeurs indiscernables, et **zéro hallucination de nombre sur les 30 rédactions** — c'est le
+résultat le plus rassurant de la série, parce qu'un résumé qui invente un montant est pire qu'un
+résumé vide : on le croit.
+
+## Ce qui départage, en revanche
+
+| Épreuve décisive | 1,00 | 1,05 | 1,10 |
+|---|---|---|---|
+| `tp_001` — pénalité de retard, réponse 270 000 FCFA | ✅ juste | ✅ **juste** | ❌ **63 450 FCFA** |
+| `manques-decision` — dégénérescence **dans le domaine** | ❌ div 0,60, coupé au budget | ✅ div 0,99 | ✅ div 1,00 |
+| boucle-1 (dioula) | ❌ 0,05 | ✅ 1,00 | ✅ 1,00 |
+| boucle-2 (dioula) | ❌ 0,02 | ✅ 1,00 | ✅ 1,00 |
+| boucle-3 (wolof) | ❌ 0,06 | ❌ 0,09 | ✅ 1,00 |
+
+## Décision révisée : `repeat_penalty = 1.05`
+
+L'étape 3 avait retenu 1,10 et écarté l'anomalie de `tp_001` comme « une trajectoire déplacée sur
+un échantillon ». **C'était faux.** Refaite à température nulle, elle se reproduit à l'identique :
+à 1,10 le modèle invente une formule — `(30 − 25) / 7` — et conclut 63 450 FCFA. Sur le prompt que
+nous déclarons publiquement et que le jury exécutera.
+
+1,05 est la seule valeur qui tienne les deux bouts :
+
+- elle garde `tp_001` **juste**, avec la clause citée mot pour mot ;
+- elle supprime la dégénérescence observée **dans le domaine** (`manques-decision` passe de 1/2 à
+  2/2, la diversité de 0,60 à 0,99) ;
+- elle coûte **un critère sur quatre-vingt-un** face à 1,00, c'est-à-dire rien de mesurable.
+
+Elle laisse boucler `boucle-3` — une demande de traduction en wolof. Hors du domaine déclaré, hors
+du `language_scope`, et donc hors de ce que le jury génère : le règlement produit ses deux prompts
+cachés **dans notre domaine**. Payer cette assurance-là au prix d'une réponse fausse sur `tp_001`
+serait un mauvais échange, et c'est exactement l'échange que 1,10 propose.
+
+### Ce que cet épisode dit de la méthode
+
+Le contrôle arithmétique n'était pas faux, il était **hors sujet** — et il a produit une décision
+confortable, chiffrée, documentée, et fausse. Un chiffre mesuré ne vaut que ce que vaut la
+question qu'on lui pose.
+
+### Ce que le contrôle a révélé sur le modèle lui-même
+
+Aucun de ces défauts ne dépend de la pénalité, ils sont dans le socle :
+
+1. **Il abandonne des faits pour placer un commentaire.** `rapport-sante` : sommé de tenir en trois
+   puces, il sacrifie le taux d'occupation de 71 % pour écrire « nécessitent une intervention
+   immédiate ». `fil-client` : il résume l'accord sans jamais citer la référence `GH-2291`.
+2. **Il classe mal l'urgence.** `priorisation` : un appel d'offres qui ferme dans 3 jours est rangé
+   en dernier, « urgence faible ». Il a recopié l'ordre a/b/c/d de l'énoncé en l'habillant de
+   justifications.
+3. **Il confond les définitions comptables.** `incoherence` : il calcule la marge brute comme
+   « chiffre d'affaires − charges fixes ».
+
+Ces trois limites sont dans `REPORT.md` et sur la fiche du modèle, mesurées et nommées, plutôt
+qu'attendues au corrigé.

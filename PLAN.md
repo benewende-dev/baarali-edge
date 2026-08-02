@@ -128,6 +128,9 @@ Ce n'est pas une décoration : c'est l'équivalent de 20 points de justesse, pou
       épreuves × 5 valeurs : `repeat_penalty = 1.10` supprime les 3 boucles à coût nul sur le fond
       (6/6 et 9/12, comme sans pénalité) ; à 1,15 le multi-étapes s'effondre à 4/12.
       → `bench/resultats.md`, `bench/copies/penalite-repetition.md`
+      **⚠ Décision revue à l'étape 5 → `repeat_penalty = 1.05`.** Ce contrôle-ci était
+      arithmétique, or le domaine est rédactionnel : à 1,10 le modèle répond **faux** à `tp_001`.
+      Le raisonnement complet est dans `bench/resultats.md`, étape 5.
 - [x] Écrire l'étude de cas **à partir du réel** → `USE_CASE.md`, chaque chiffre sourcé, plus une
       section « What we do not claim » qui retire d'avance les revendications qui ne tiendraient
       pas à l'audit.
@@ -172,8 +175,23 @@ l'emballage du travail, c'en est une partie notée.*
       même handler ; on le dit, on ne le mime pas. Avantage à ne pas gâcher : notre démonstration
       entière tient **réseau coupé**, ce qu'un concurrent branché sur un vrai code court ne peut
       pas montrer.
-- [ ] Relire les 2 `test_prompts` : le jury en ajoute 2 cachés dans le même domaine — nos prompts
-      doivent être **représentatifs**, pas taillés sur mesure (l'anti-surapprentissage est explicite)
+- [x] **Savoir ce qu'on nous demandera.** Le jeu de validation ne sera pas distribué aux
+      participants — `adtc_profiler/accuracy.py` dit « the full hidden 30 % validation subset
+      distributed by **judges** », et l'onglet Ressources du Devpost renvoie 404. Ce qu'on a, c'est
+      la définition du domaine : *summarization, drafting, and analysis for small and medium
+      enterprises*. La parade n'est donc pas de deviner, c'est d'être large.
+- [x] **Contrôle bâti sur cette définition** → `bench/redaction.py`, 15 épreuves (5 résumer,
+      5 rédiger, 5 analyser), FR + EN, huit villes plus des énoncés sans lieu, notées sans avis
+      humain — dont un détecteur d'invention de nombres. Résultat : **91 % à poids égal, zéro
+      nombre inventé sur 45 rédactions**, et trois limites du socle nommées (il sacrifie un fait
+      pour placer un commentaire, il classe mal l'urgence, il confond marge brute et résultat).
+      → `bench/copies/redaction.md`
+- [x] **Relecture des 2 `test_prompts`** : gardés tels quels. `tp_002` est du résumé + analyse de
+      manques, exactement la définition du domaine ; `tp_001` est de l'analyse contractuelle avec
+      citation, et il est **juste** à 1,00 comme à 1,05 — c'est seulement à 1,10, la valeur qu'on
+      avait retenue à tort, qu'il devenait faux. Aucun des deux n'est taillé sur mesure : ce sont
+      des tâches ordinaires du domaine, ce que l'anti-surapprentissage exige.
+- [ ] `REPORT.md` : rédiger la prose des *Design Decisions* (tous les chiffres sont déjà mesurés)
 
 ---
 

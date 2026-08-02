@@ -54,18 +54,26 @@ PLAN.md               Working plan (French)
 ## Recommended inference settings
 
 ```
---repeat-penalty 1.10     (llama.cpp default is 1.0 — no penalty at all)
+--repeat-penalty 1.05     (llama.cpp default is 1.0 — no penalty at all)
 --temp 0
 ```
 
-Not a preference: a measured fix. On inputs outside its competence the model degenerates into a
-repeated phrase until the token budget runs out, and the default configuration of the evaluation
-chain applies no repetition penalty. **1.10 is the smallest value that eliminates the failure on
-every trigger we found, at zero measured cost** on an 18-item domain control (6/6 single-step and
-9/12 multi-step, identical to no penalty). At 1.15 multi-step reasoning collapses to 4/12.
+Not a preference: a measured fix, and one we got wrong before we got it right. On inputs outside
+its competence the model degenerates into a repeated phrase until the token budget runs out, and
+the evaluation chain applies no repetition penalty by default. An 18-item arithmetic control
+pointed at 1.10. A later control built to match this track's actual definition — *summarization,
+drafting and analysis* — showed that at 1.10 the model answers our own published test prompt
+`tp_001` with **63,450 FCFA instead of 270,000**, inventing a formula to get there. Reproducible
+at temperature 0.
 
-Full sweep and reasoning: [`bench/resultats.md`](bench/resultats.md) and
-[`bench/copies/penalite-repetition.md`](bench/copies/penalite-repetition.md).
+**1.05 is the only value that holds both ends**: `tp_001` stays correct with the contract clause
+quoted verbatim, the in-domain degeneracy disappears (diversity 0.60 → 0.99 on the case that
+showed it), and it costs **one criterion out of 81** against no penalty at all — nothing
+measurable. Above 1.10, multi-step reasoning collapses outright: 9/12 → 4/12 at 1.15.
+
+Full sweeps: [`bench/resultats.md`](bench/resultats.md),
+[`bench/copies/redaction.md`](bench/copies/redaction.md) (15 writing tasks, 3 penalties) and
+[`bench/copies/penalite-repetition.md`](bench/copies/penalite-repetition.md) (23 probes, 5 values).
 
 ## Reproducing our measurements
 
