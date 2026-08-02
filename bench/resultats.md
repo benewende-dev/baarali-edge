@@ -141,3 +141,66 @@ En Q3_K_M la justesse tombe à 0,630 sans compensation ailleurs : c'est la limit
 ⚠️ `arc_easy` est un test de raisonnement général, **pas** le domaine Entreprise/PME. Les
 organisateurs annoncent fournir un jeu de validation par domaine : dès qu'on l'a, on re-mesure les
 finalistes dessus. `arc_easy` sert ici à **classer**, pas à prédire la note du jury.
+
+---
+
+# Étape 3 — robustesse : la pénalité de répétition
+
+Commande : `.venv/bin/python bench/penalite.py` → `bench/copies/penalite-repetition.md`
+
+## La panne
+
+La sonde langues a mis au jour un mode d'échec franc : sur une entrée hors de sa compétence, le
+modèle ne refuse pas, il **boucle** — une phrase répétée jusqu'à épuiser le budget de jetons.
+
+Ce n'est pas cosmétique. Le jury ajoute **2 prompts cachés** ; une boucle sur l'un d'eux, c'est une
+copie blanche sur un quart de l'épreuve qualitative. Et **la chaîne officielle ne protège de
+rien** : relu dans `adtc_profiler/accuracy.py`, l'appel est
+`create_completion(temperature=0.0)`, sans pénalité, et `llama-cpp-python` 0.3.34 a
+`repeat_penalty = 1.0` par défaut. Ce que nous avons observé est donc **exactement** ce que verrait
+un correcteur.
+
+## Ce que la mesure a corrigé en route
+
+Le premier passage comparait cinq pénalités sur un indicateur de **forme** — la proportion de
+quadrigrammes distincts, qui détecte une boucle sans avis humain. Il concluait « 1,10 règle tout,
+diversité 0,99 ». Sauf qu'à 1,10 la réponse à `tp_001` passait de 270 000 FCFA (juste) à
+**63 450 FCFA** (absurde), avec une forme irréprochable. **La pénalité ne casse pas la citation :
+elle dévie le raisonnement**, et un indicateur de forme est aveugle à ça.
+
+D'où un second contrôle, sur le **fond** : dix-huit énoncés de gestion ordinaires — TVA ivoirienne,
+remise, plafond contractuel, provision, escompte, marge, puis douze enchaînements à plusieurs
+calculs — dont la bonne réponse est un **nombre** dont on vérifie la présence. Douze, et pas
+quatre : au premier essai le niveau multi-étapes n'en comptait que quatre, dont un raté à toutes
+les pénalités et un réussi à toutes. Deux énoncés discriminants ne décident de rien.
+
+## Résultats
+
+| Pénalité | Boucles réglées | Fond, 1 étape | Fond, n étapes |
+|---|---|---|---|
+| 1,00 *(défaut officiel)* | **0 / 3** | 6/6 | 9/12 |
+| 1,05 | 2 / 3 | 6/6 | 9/12 |
+| **1,10** | **3 / 3** | **6/6** | **9/12** |
+| 1,15 | 3 / 3 | 6/6 | 4/12 |
+| 1,20 | 3 / 3 | 5/6 | 4/12 |
+
+## Décision : `repeat_penalty = 1.10`
+
+C'est **la plus petite valeur qui supprime les trois boucles**, et elle le fait à **coût nul
+mesuré** : 6/6 et 9/12, exactement comme sans pénalité. Au-delà, la falaise est brutale — 1,15 fait
+tomber le raisonnement à plusieurs étapes de 9/12 à 4/12, soit plus de la moitié des énoncés
+perdus, sans rien régler de plus.
+
+L'anomalie de `tp_001` à 1,10 se lit maintenant pour ce qu'elle est : une trajectoire de
+raisonnement déplacée sur **un** échantillon, pas une tendance. Sur dix-huit énoncés, 1,10 est
+indiscernable de 1,00. Sans le second contrôle, on aurait écarté la bonne valeur sur un cas isolé.
+
+### Deux limites à dire clairement
+
+1. **Cette pénalité ne change pas notre note automatisée.** La justesse du profileur passe par des
+   vraisemblances (`arc_easy` en QCM), où l'échantillonnage n'intervient pas. C'est un réglage
+   **recommandé pour la génération** — documenté dans le `README.md` et appliqué dans `demo/` —
+   pas un levier sur `S_acc`. Le prétendre serait faux.
+2. **`retard+plafond` échoue à toutes les pénalités.** Arrondir à la *semaine entamée* reste hors
+   de portée du modèle, exactement comme à l'étape 1. C'est une limite du socle, et elle est écrite
+   telle quelle dans `USE_CASE.md` plutôt que passée sous silence.

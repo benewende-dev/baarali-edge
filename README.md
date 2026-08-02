@@ -15,10 +15,16 @@ every byte on the machine.
 
 ## Why offline is the requirement, not a feature
 
-For an SME in Abidjan, cloud AI fails on three counts at once: metered data makes every query a
-cost, outages make it unavailable exactly when work is urgent, and sending contracts, payroll or
-client files to a foreign provider is a confidentiality decision most organisations cannot make.
-An assistant that lives on the laptop removes all three at the same time.
+In the 2023 World Bank Enterprise Survey, **80,4 % of Ivorian firms reported electrical outages**,
+and affected firms put the loss at **2 % of annual sales**. The detail that decides the
+architecture is simpler than any statistic: **the laptop has a battery, the fibre box does not.**
+When the power goes, a cloud assistant becomes a spinning wheel at the exact moment the work is
+urgent — while a model living in the laptop's own RAM keeps answering. Add to that the documents
+that cannot leave the company, and on-device inference stops being a feature and becomes the
+requirement.
+
+The full argument, with sources and with an explicit list of what we **do not** claim, is in
+[`USE_CASE.md`](USE_CASE.md).
 
 ---
 
@@ -37,12 +43,29 @@ Peak memory budget: **7 GB**. Runtime: **llama.cpp**, GGUF weights, CPU only (`-
 metadata.json         Team, model and test-prompt metadata (ADTC format)
 download_model.sh     Fetches the GGUF weights from a public URL
 REPORT.md             Technical report: problem, design, constraints, benchmarks
+USE_CASE.md           The African use case, sourced — and what we do not claim
 model/                Weights land here at download time — never committed
 bench/                Our own measurement runs and the reasoning behind each choice
 PLAN.md               Working plan (French)
 ```
 
 ---
+
+## Recommended inference settings
+
+```
+--repeat-penalty 1.10     (llama.cpp default is 1.0 — no penalty at all)
+--temp 0
+```
+
+Not a preference: a measured fix. On inputs outside its competence the model degenerates into a
+repeated phrase until the token budget runs out, and the default configuration of the evaluation
+chain applies no repetition penalty. **1.10 is the smallest value that eliminates the failure on
+every trigger we found, at zero measured cost** on an 18-item domain control (6/6 single-step and
+9/12 multi-step, identical to no penalty). At 1.15 multi-step reasoning collapses to 4/12.
+
+Full sweep and reasoning: [`bench/resultats.md`](bench/resultats.md) and
+[`bench/copies/penalite-repetition.md`](bench/copies/penalite-repetition.md).
 
 ## Reproducing our measurements
 
