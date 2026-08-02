@@ -1,7 +1,10 @@
 {
   "team_id": "baarali-edge",
   "domain": "corporate_enterprise",
-  "language_scope": ["fr", "dyu", "en"],
+  "language_scope": [
+    "fr",
+    "en"
+  ],
   "african_alpha_claim": true,
   "budget_laptop_claim": true,
   "submitter": {
@@ -12,7 +15,7 @@
   "cross_disciplinary_pairing": {
     "discipline": "enterprise_document_intelligence",
     "load_bearing": true,
-    "description": "The model is the reasoning core of an offline enterprise assistant: it reads a company's own documents (contracts, invoices, HR policies, meeting notes) from a local index and answers with citations, on a single laptop, with no network. It is load-bearing because the deployment target — SMEs and public bodies in West Africa working through outages and metered data — cannot send those documents to a cloud provider at all, for cost and for confidentiality."
+    "description": "The model is the reasoning core of an offline enterprise assistant: it reads a company's own documents (contracts, invoices, HR policies, meeting notes) from a local index and answers with citations, on a single laptop, with no network. It is load-bearing because the deployment target — SMEs and public bodies in francophone West Africa working through power cuts and metered data — cannot send those documents to a cloud provider at all, for cost and for confidentiality. The same core is reachable over USSD from a feature phone, with no data plan."
   },
   "test_prompts": [
     {
