@@ -81,7 +81,8 @@ pourront pas produire.
       temps à être accordé, et c'est ce qui rendra un affinage possible sans dépenser un franc
 - [ ] Récupérer le **jeu de validation du domaine Entreprise/PME** (onglet Ressources) — les
       organisateurs en fournissent un par domaine : on mesurera dessus, pas sur un test générique
-- [ ] Créer un compte Hugging Face (hébergement public des poids, gratuit)
+- [x] Compte Hugging Face : **huggingface.co/Benewende-dev** — c'est là que seront publiés les
+      poids `.gguf` (dépôt public, gratuit, accessible sans identifiants comme l'exige le gabarit)
 
 **Outillage machine :**
 - [ ] `brew install llama.cpp` → fournit `llama-bench`, exigé par le profileur
