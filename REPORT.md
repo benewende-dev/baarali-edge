@@ -74,6 +74,19 @@ profiler on the standard evaluation machine.
 
 ## African use case
 
-TODO — the claim behind `african_alpha_claim: true`: francophone enterprise documents, Dioula
-language support (kept only if measured to cost less accuracy than the bonus it earns), and
-reachability from a feature phone over USSD, with no data plan.
+The claim behind `african_alpha_claim: true` is set out in full, with sources, in
+**[`USE_CASE.md`](USE_CASE.md)**. In one paragraph:
+
+80,4 % of Ivorian firms reported electrical outages in the 2023 World Bank Enterprise Survey, and
+affected firms lose 2 % of annual sales to them. When the power fails, the laptop's battery keeps
+the screen on and the fibre box goes dark — so a cloud assistant is unavailable precisely when the
+work is urgent, while a model in the laptop's own RAM is not. Add the documents that cannot leave
+the company (contracts, payroll, client lists), and on-device inference becomes the requirement
+rather than the feature. Reach beyond the office is provided over **USSD**, the text-only channel
+that already carries 22 million active mobile-money accounts in Côte d'Ivoire — no app, no data
+plan, any handset.
+
+`USE_CASE.md` also states what this submission **does not** claim: no Ivorian-language capability
+(measured, and `dyu` was consequently removed from `language_scope`), no claim that mobile data is
+unaffordable in Côte d'Ivoire (by the ITU threshold it is not), and no claim that feature phones
+dominate the market (they do not).
