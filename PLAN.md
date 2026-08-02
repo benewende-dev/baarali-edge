@@ -119,19 +119,25 @@ On ne choisit pas le modèle de départ par réputation : on le **note** avec le
 
 ---
 
-## Étape 3 — Le cas d'usage africain *(jusqu'à 10 points, et 1 500 $)*
+## Étape 3 — Le cas d'usage africain *(jusqu'à 10 points, et 1 500 $)* ✅
 
 Ce n'est pas une décoration : c'est l'équivalent de 20 points de justesse, pour bien moins d'effort.
 
-- [ ] Écrire l'étude de cas **à partir du réel** : PME abidjanaise, coupures, data comptée,
-      documents qui ne peuvent pas sortir de l'entreprise. Chiffres et situations vraies.
-- [ ] Démontrer la **portée sans forfait** : le canal USSD, filmé depuis un téléphone à touches
-- [ ] **Dioula — sous condition.** Vérifier d'abord ce qui existe comme données ouvertes
-      exploitables. Ça n'apporte plus de multiplicateur (il n'existe pas) : ça nourrit le bonus
-      des 10 points. Donc on n'y consacre du temps **que si** l'affinage ne coûte pas de justesse
-      ailleurs — mesure avant/après obligatoire, avec les crédits GPU d'Udutech.
-- [ ] Si la mesure ne suit pas : retirer `dyu` de `language_scope`. Une revendication non tenue
-      se voit à l'audit et coûte plus qu'elle ne rapporte.
+- [x] **Robustesse d'abord.** La sonde langues avait mis au jour une boucle dégénérée sur entrée
+      inconnue, et la chaîne officielle n'applique aucune pénalité de répétition. Mesuré sur 23
+      épreuves × 5 valeurs : `repeat_penalty = 1.10` supprime les 3 boucles à coût nul sur le fond
+      (6/6 et 9/12, comme sans pénalité) ; à 1,15 le multi-étapes s'effondre à 4/12.
+      → `bench/resultats.md`, `bench/copies/penalite-repetition.md`
+- [x] Écrire l'étude de cas **à partir du réel** → `USE_CASE.md`, chaque chiffre sourcé, plus une
+      section « What we do not claim » qui retire d'avance les revendications qui ne tiendraient
+      pas à l'audit.
+- [x] Démontrer la **portée sans forfait** → `demo/ussd.py`. Le vrai contrat d'agrégateur, la vraie
+      limite de 182 caractères, les commandes lues sur le disque. **Pas de numéro court** : il
+      exige une convention opérateur, on ne le prétend pas.
+- [x] **Dioula — écarté par la mesure.** La sonde (`bench/sonder_langues.py`) a donné « langue du
+      Cameroun » pour le dioula, « langue du Tigré » pour le wolof, et des boucles en traduction.
+      `dyu` retiré de `language_scope`. Les crédits GPU d'Udutech, s'ils arrivent, iront à
+      l'affinage entreprise francophone — pas à enseigner une langue depuis zéro en 3 semaines.
 
 ---
 
@@ -151,8 +157,19 @@ Ce n'est pas une décoration : c'est l'équivalent de 20 points de justesse, pou
 l'emballage du travail, c'en est une partie notée.*
 
 - [ ] `REPORT.md` : problème, décisions de conception, contraintes, **chiffres mesurés**
-- [ ] Vidéo de **2 minutes maximum** : le modèle tourne hors ligne sur le portable, puis la
-      démonstration (lecture de documents, réponse **citée**, USSD depuis un téléphone à touches)
+- [ ] Vidéo de **2 minutes maximum**. Plan de tournage arrêté à l'étape 3, avec ce qu'on a :
+
+      | Durée | Plan | Ce que ça prouve |
+      |---|---|---|
+      | 0:00–0:15 | Wi-Fi coupé à l'écran, `airport -I` ou l'icône barrée | le hors-ligne, montré |
+      | 0:15–0:50 | `bench/repondre.py` ou llama-cli sur `tp_001` | l'objet noté, en marche |
+      | 0:50–1:30 | `demo/ussd.py --telephone`, session complète | le canal, à sa vraie limite |
+      | 1:30–2:00 | `commandes.json` ouvert sur le disque, puis le chiffre du profileur | rien ne sort de la machine |
+
+      **Pas de numéro court filmé** : il exige une convention opérateur. Le mode `--serveur` est le
+      même handler ; on le dit, on ne le mime pas. Avantage à ne pas gâcher : notre démonstration
+      entière tient **réseau coupé**, ce qu'un concurrent branché sur un vrai code court ne peut
+      pas montrer.
 - [ ] Relire les 2 `test_prompts` : le jury en ajoute 2 cachés dans le même domaine — nos prompts
       doivent être **représentatifs**, pas taillés sur mesure (l'anti-surapprentissage est explicite)
 

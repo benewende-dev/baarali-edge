@@ -30,6 +30,22 @@ disk the model runs on. Nothing leaves the machine, which is the entire argument
 operator: weeks of paperwork and a commercial contract. **We claim no short code in service.**
 `--telephone` replays a session locally so that what we demonstrate is exactly what we can prove.
 
+## The 182 characters constrain the channel, not the reasoning
+
+The first version of this handler asked the model to answer in one sentence under 150 characters.
+Measured against the real model, it answered *"25 jours de retard génère 10% de pénalité"* — wrong,
+where the reasoned answer is 270 000 FCFA — and on an off-topic question it produced *"Le Burkina
+Faso est une PME ivoirienne"*, the role instruction leaking into the answer. **Denying a small
+model its intermediate steps denies it the calculation.**
+
+So the handler reasons first, at full length, and condenses afterwards. Two calls, 7–16 s total on
+the reference machine — comfortably inside a USSD session. The screen limit is enforced at the
+edge, where it belongs.
+
+Two defects found the same way and fixed: the model sometimes writes `Conclusion :` and stops, so
+an empty extract falls back to the full reasoning; and it emphasises its conclusion in Markdown, so
+`**` is stripped before it reaches a handset that cannot render it.
+
 ## Sampling settings, and why
 
 The handler generates with `repeat_penalty = 1.10`, the value chosen in

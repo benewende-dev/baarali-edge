@@ -64,12 +64,28 @@ ECRAN_MAX = 182
 # réponse laide, c'est une session perdue et du crédit dépensé pour rien.
 PENALITE = 1.10
 
-# Le modèle doit tenir dans un écran. On le lui dit, et on vérifie ensuite —
-# une consigne n'est pas une garantie.
-CONSIGNE = (
-    "Tu es l'assistant d'une PME ivoirienne, joignable par USSD sur un téléphone. "
-    "Réponds en français, en moins de 150 caractères, sans formatage, sans liste, "
-    "sans emoji. Une seule phrase. Si tu ne sais pas, dis-le en une phrase."
+# Deux consignes, parce que la contrainte des 182 caractères porte sur **le
+# canal, pas sur le raisonnement**. La première version de ce fichier demandait
+# au modèle de répondre directement en une phrase : mesuré contre le vrai
+# modèle, il répondait « 10 % de pénalité » au lieu de 270 000 FCFA, et sur une
+# question hors sujet il produisait « Le Burkina Faso est une PME ivoirienne » —
+# la consigne de rôle fuyait dans la réponse. Priver un petit modèle de ses
+# étapes de calcul, c'est le priver du calcul.
+#
+# On sépare donc : il raisonne librement, puis on condense. Deux appels valent
+# largement mieux qu'une mauvaise réponse — une session USSD tient largement le
+# temps supplémentaire.
+CONSIGNE_RAISONNER = (
+    "Tu es l'assistant interne d'une PME ivoirienne. Tu réponds à partir des "
+    "documents de l'entreprise fournis ci-dessous quand il y en a. Raisonne étape "
+    "par étape, puis termine par une ligne « Conclusion : » qui donne la réponse "
+    "et le montant exact en FCFA s'il y en a un. Réponds en français. Si la "
+    "question sort de ton domaine ou que tu n'as pas l'information, dis-le."
+)
+CONSIGNE_CONDENSER = (
+    "Réécris la conclusion suivante en UNE phrase de moins de 140 caractères, en "
+    "français, en conservant le chiffre exact s'il y en a un. Pas de formatage, "
+    "pas de liste, pas de préambule. Donne uniquement la phrase."
 )
 
 # Les données de l'entreprise restent sur la machine : c'est tout l'argument.
@@ -91,6 +107,18 @@ def _tronquer(texte: str, limite: int) -> str:
     return (coupe or texte[: limite - 1]) + "…"
 
 
+def _nettoyer(texte: str) -> str:
+    """Retire le balisage Markdown : un combiné USSD affiche du texte brut.
+
+    Sans ça, un écran commence par « ** » parce que le modèle a voulu mettre sa
+    conclusion en gras — observé, pas redouté.
+    """
+    texte = texte.strip()
+    for motif in ("**", "*", "##", "#", "`", "> "):
+        texte = texte.replace(motif, "")
+    return texte.strip(" -–—:\n")
+
+
 def ecran(prefixe: str, corps: str) -> str:
     """Assemble un écran USSD valide. Émettre plus long serait mentir sur le canal."""
     assert prefixe in ("CON", "END")
@@ -110,24 +138,61 @@ class Assistant:
         # lequel le modèle est jugé. On démontre ce qui est mesuré.
         self.llm = Llama(model_path=str(poids), n_ctx=2048, verbose=False)
 
-    def repondre(self, question: str, contexte: str = "") -> str:
-        invite = f"{contexte}\n\n{question}" if contexte else question
+    def _generer(self, consigne: str, invite: str, budget: int) -> str:
         out = self.llm.create_chat_completion(
             messages=[
-                {"role": "system", "content": CONSIGNE},
+                {"role": "system", "content": consigne},
                 {"role": "user", "content": invite},
             ],
-            max_tokens=96,  # 150 caractères tiennent largement dessous
+            max_tokens=budget,
             temperature=0.0,
             repeat_penalty=PENALITE,
         )
         return (out["choices"][0]["message"].get("content") or "").strip()
+
+    def repondre(self, question: str) -> str:
+        """Raisonner en entier, puis condenser pour l'écran. Dans cet ordre."""
+        contexte = contexte_documentaire(question)
+        invite = f"{contexte}\n\nQuestion : {question}" if contexte else question
+        raisonnement = self._generer(CONSIGNE_RAISONNER, invite, 512)
+        if not raisonnement:
+            return ""
+        # On ne condense que la conclusion quand le modèle en a isolé une : lui
+        # redonner tout le raisonnement l'invite à le résumer au lieu de le
+        # trancher. Mais il lui arrive d'écrire « Conclusion : » et de s'arrêter
+        # là — observé sur une question de statut. Un extrait vide n'est pas une
+        # conclusion : on repart alors du raisonnement complet.
+        conclusion = raisonnement
+        for marqueur in ("Conclusion :", "Conclusion:"):
+            if marqueur in raisonnement:
+                extrait = _nettoyer(raisonnement.rsplit(marqueur, 1)[1])
+                if extrait:
+                    conclusion = extrait
+                break
+        if len(conclusion) <= 140:
+            return conclusion
+        return _nettoyer(self._generer(CONSIGNE_CONDENSER, conclusion, 96)) or conclusion
 
 
 def charger_commandes() -> dict[str, dict]:
     if COMMANDES.exists():
         return json.loads(COMMANDES.read_text())
     return {}
+
+
+def contexte_documentaire(question: str) -> str:
+    """Joint au prompt la fiche des commandes citées dans la question.
+
+    C'est la démonstration entière en trois lignes : la donnée qui sert à
+    répondre est lue sur le disque de la machine, et n'en sort jamais.
+    """
+    fiches = [
+        f"Commande {ref} : {c['client']}, {c['montant_fcfa']} FCFA HT, "
+        f"échéance {c['echeance']}, statut : {c['statut']}."
+        for ref, c in charger_commandes().items()
+        if ref.lower() in question.lower()
+    ]
+    return "Documents de l'entreprise :\n" + "\n".join(fiches) if fiches else ""
 
 
 def repondre(
