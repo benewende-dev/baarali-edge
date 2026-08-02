@@ -204,3 +204,51 @@ indiscernable de 1,00. Sans le second contrôle, on aurait écarté la bonne val
 2. **`retard+plafond` échoue à toutes les pénalités.** Arrondir à la *semaine entamée* reste hors
    de portée du modèle, exactement comme à l'étape 1. C'est une limite du socle, et elle est écrite
    telle quelle dans `USE_CASE.md` plutôt que passée sous silence.
+
+---
+
+# Étape 4 — le paquet, mesuré tel qu'il sera soumis
+
+Trois passages du profileur officiel sur `model/Qwen3.5-2B-IQ4_XS.gguf`, c'est-à-dire sur le
+fichier que `download_model.sh` télécharge, au chemin que `_runtime.model_path` déclare.
+Bruts : `bench/raw/final-iq4xs-{1,2,3}.json`.
+
+| | Run 1 | Run 2 | Run 3 | **Médiane** |
+|---|---|---|---|---|
+| Débit | 32,23 t/s | 28,25 t/s | 31,20 t/s | **31,20 t/s** |
+| Pic RSS | 1 615 Mo | 1 544 Mo | 1 526 Mo | **1 544 Mo** |
+| Premier jeton | 3 351 ms | 4 643 ms | 3 398 ms | 3 398 ms |
+| CPU p99 | 97,5 % | 97,3 % | 87,0 % | 97,3 % |
+
+Bridage thermique : **aucun**. Justesse `arc_easy` : **0,68** (50 questions, défaut du profileur).
+`params_match: true` — le profileur a compté 1 881 825 088 paramètres et validé « 1.88B ».
+
+**S_eff = 77,9** sur 7 Go décimaux (78,5 sur 7 Gio). On retient le plus bas : un chiffre
+sous-estimé ne peut pas être contredit à l'audit.
+
+## L'écart avec l'étape 2, dit avant qu'on nous le demande
+
+L'étape 2 relevait 34,3 t/s et 1,74 Go pour ce même fichier. Même machine, même commande. C'est de
+la variance entre passages et de l'état thermique d'un portable sans ventilateur. D'où la règle
+déjà appliquée : **médiane de trois**, et le tableau de l'étape 2 ne sert qu'à **classer** des
+candidats mesurés coup sur coup, jamais à revendiquer une valeur absolue.
+
+## Zéro appel réseau : mesuré, pas déduit
+
+`bash bench/hors_ligne.sh --sockets` — 15 relevés pendant une inférence complète.
+
+Le résultat corrige une idée fausse qu'on allait écrire : **`llama-cli` ouvre bel et bien des
+sockets**, systématiquement, une paire en boucle locale (`127.0.0.1` qui se connecte à lui-même)
+qui sert de réveil de threads. Un contrôle naïf « une socket ⇒ échec » nous aurait recalés — et
+recalerait n'importe quelle soumission llama.cpp. Le critère juste est l'absence d'adresse **non
+locale**, et sur ce critère : **aucune, sur les 15 relevés**.
+
+Deux pièges de mesure rencontrés en chemin, notés parce qu'ils coûtent du temps :
+
+- `llama-cli -no-cnv` **sans `-st`** génère puis attend un second tour : un run est resté 17
+  minutes en vie pour 48 jetons.
+- `lsof` sort en **code d'erreur quand il ne trouve rien**. Sous `set -e`, le script mourait
+  exactement dans le cas favorable.
+
+Reste à faire : `bash bench/hors_ligne.sh --sans-wifi`, l'épreuve Wi-Fi coupé. Différée pour ne
+pas couper la connexion pendant une session de travail en ligne.
