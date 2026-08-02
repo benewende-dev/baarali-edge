@@ -141,13 +141,15 @@ Ce n'est pas une décoration : c'est l'équivalent de 20 points de justesse, pou
 
 ---
 
-## Étape 4 — Publier et éprouver le paquet
+## Étape 4 — Publier et éprouver le paquet ✅
 
-- [ ] Pousser les poids `.gguf` sur Hugging Face (dépôt public, sans identifiants)
-- [ ] Écrire `download_model.sh` : idempotent, URL publique, chemin identique à `_runtime.model_path`
-- [ ] Effacer `model/`, lancer `bash download_model.sh` **depuis zéro** : ça doit marcher seul
-- [ ] Run complet du profileur → `submission.json` avec `"measured_on": "participant_laptop"`
-- [ ] Couper le Wi-Fi et refaire tourner une inférence : **zéro appel réseau**, prouvé, pas supposé
+- [x] Poids publiés : <https://huggingface.co/Benewende-dev/baarali-edge-2b> (public, sans identifiants)
+- [x] `download_model.sh` : URL publique, empreinte SHA-256 vérifiée, taille contrôlée, reprise
+      d'un transfert interrompu. Testé en corrompant volontairement le fichier — détecté.
+- [x] `model/` vidé, téléchargement depuis zéro : **7 min 46 s**, empreinte identique, `curl` seul
+- [x] Profileur complet ×3 → médiane **31,20 t/s**, **1 544 Mo**, aucun bridage, `params_match: true`
+- [x] Hors ligne prouvé deux fois : aucune socket non locale sur 15 relevés, et une inférence
+      complète **Wi-Fi coupé** (7 s). Trois pièges de mesure notés dans `bench/resultats.md`.
 
 ---
 

@@ -250,5 +250,24 @@ Deux pièges de mesure rencontrés en chemin, notés parce qu'ils coûtent du te
 - `lsof` sort en **code d'erreur quand il ne trouve rien**. Sous `set -e`, le script mourait
   exactement dans le cas favorable.
 
-Reste à faire : `bash bench/hors_ligne.sh --sans-wifi`, l'épreuve Wi-Fi coupé. Différée pour ne
-pas couper la connexion pendant une session de travail en ligne.
+## L'épreuve Wi-Fi coupé
+
+`bash bench/hors_ligne.sh --sans-wifi` — Wi-Fi éteint, injoignabilité confirmée par `ping`,
+inférence complète en **7 s**, 33,5 t/s en génération, puis Wi-Fi rétabli et vérifié.
+
+Un troisième piège, et le plus instructif des trois. La première version déclarait l'interface
+réseau en variable **locale** à la fonction. Or un `trap EXIT` s'exécute **après** la sortie de la
+fonction : au moment exact où le filet devait rétablir le Wi-Fi, la variable n'existait plus. La
+machine est restée hors ligne, et il a fallu rallumer à la main.
+
+Un garde-fou qui ne tient pas au moment de l'accident n'est pas un garde-fou. La variable est
+maintenant globale, le rétablissement est une fonction nommée, et il **vérifie** l'état de
+l'interface au lieu de l'espérer.
+
+## Le paquet, de bout en bout
+
+`model/` vidé, puis `bash download_model.sh` : **7 min 46 s**, empreinte
+`3639f34b5ca22aa1c51f3616566eae8c355111554f6924ad97ee2652ed11c1cd` identique à l'attendue.
+`curl` seul, URL publique, aucun jeton — exactement ce dont dispose un évaluateur.
+
+Poids publiés : <https://huggingface.co/Benewende-dev/baarali-edge-2b>

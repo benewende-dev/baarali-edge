@@ -77,16 +77,33 @@ epreuve_sockets() {
   fi
 }
 
+# `interface` est **volontairement globale**. La première version la déclarait
+# `local` à la fonction : le `trap EXIT` s'exécutant *après* la sortie de la
+# fonction, la variable n'existait plus au moment précis où le filet devait
+# servir, et le Wi-Fi restait coupé. Un garde-fou qui ne tient pas au moment de
+# l'accident n'est pas un garde-fou. Constaté en vrai, sur cette machine.
+interface=""
+
+retablir_wifi() {
+  [[ -n "$interface" ]] || return 0
+  echo "→ rétablissement du Wi-Fi (${interface})…"
+  networksetup -setairportpower "$interface" on
+  # Vérifier, pas espérer : si la remise en route a échoué, il faut le voir.
+  sleep 2
+  networksetup -getairportpower "$interface"
+}
+
 epreuve_sans_wifi() {
-  local interface; interface="$(networksetup -listallhardwareports \
+  interface="$(networksetup -listallhardwareports \
     | awk '/Wi-Fi|AirPort/{getline; print $2; exit}')"
   [[ -n "$interface" ]] || { echo "interface Wi-Fi introuvable" >&2; exit 1; }
 
   # Le Wi-Fi revient quoi qu'il arrive : succès, échec, ou Ctrl-C.
-  trap 'echo "→ rétablissement du Wi-Fi ($interface)…"; \
-        networksetup -setairportpower "$interface" on' EXIT INT TERM
+  trap retablir_wifi EXIT INT TERM
 
-  echo "→ coupure du Wi-Fi sur $interface…"
+  # Accolades obligatoires : sans elles, bash agrège le caractère « … » qui suit
+  # au nom de la variable et échoue sur « interface… : unbound variable ».
+  echo "→ coupure du Wi-Fi sur ${interface}…"
   networksetup -setairportpower "$interface" off
   sleep 2
 
