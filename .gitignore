@@ -15,8 +15,6 @@ __pycache__/
 submission.json
 audit.json
 
-# Nos mesures brutes
-bench/raw/
 
 # Poids des candidats au banc d essai
 bench/models/

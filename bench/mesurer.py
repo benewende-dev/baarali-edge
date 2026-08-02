@@ -63,6 +63,52 @@ CANDIDATS: dict[str, dict[str, str]] = {
         "params": "3.8B",
         "licence": "mit",
     },
+    # ── Étape 2 : quantifications du socle retenu (Qwen3.5-2B) ────────────────
+    # Le barème récompense la légèreté (20 %) et le débit (30 %) : descendre en
+    # quantification gagne sur ces deux axes et perd sur la justesse (50 %).
+    # L'équilibre ne se devine pas, il se mesure. Les variantes `UD-` sont des
+    # quantifications guidées par matrice d'importance : à taille égale, elles
+    # préservent mieux les poids qui comptent.
+    "q2b-iq4xs": {
+        "repo": "unsloth/Qwen3.5-2B-GGUF",
+        "fichier": "Qwen3.5-2B-IQ4_XS.gguf",
+        "params": "2B",
+        "licence": "apache-2.0",
+    },
+    "q2b-ud-q4": {
+        "repo": "unsloth/Qwen3.5-2B-GGUF",
+        "fichier": "Qwen3.5-2B-UD-Q4_K_XL.gguf",
+        "params": "2B",
+        "licence": "apache-2.0",
+    },
+    "q2b-q5km": {
+        "repo": "unsloth/Qwen3.5-2B-GGUF",
+        "fichier": "Qwen3.5-2B-Q5_K_M.gguf",
+        "params": "2B",
+        "licence": "apache-2.0",
+    },
+    "q2b-ud-q5": {
+        "repo": "unsloth/Qwen3.5-2B-GGUF",
+        "fichier": "Qwen3.5-2B-UD-Q5_K_XL.gguf",
+        "params": "2B",
+        "licence": "apache-2.0",
+    },
+    "q2b-q3km": {
+        "repo": "unsloth/Qwen3.5-2B-GGUF",
+        "fichier": "Qwen3.5-2B-Q3_K_M.gguf",
+        "params": "2B",
+        "licence": "apache-2.0",
+    },
+    # Prédiction multi-jetons : même modèle, même quantification, tête
+    # supplémentaire. Sert à savoir si `llama-bench` — que le profileur lance
+    # sans réglage — en tire quoi que ce soit. Si non, la tête n'ajoute que du
+    # poids, ce qui coûterait sur l'axe mémoire.
+    "q2b-mtp-q4": {
+        "repo": "unsloth/Qwen3.5-2B-MTP-GGUF",
+        "fichier": "Qwen3.5-2B-Q4_K_M.gguf",
+        "params": "2B",
+        "licence": "apache-2.0",
+    },
 }
 
 
@@ -83,10 +129,15 @@ def telecharger(label: str) -> Path:
     comme s'il était complet et fausserait la mesure sans rien signaler.
     """
     c = CANDIDATS[label]
-    cible = POIDS / c["fichier"]
+    # Un dossier par candidat, jamais un espace de noms plat : deux dépôts
+    # différents publient le MÊME nom de fichier (`Qwen3.5-2B-Q4_K_M.gguf`
+    # existe dans le dépôt normal et dans le dépôt MTP). À plat, le second
+    # serait tenu pour déjà téléchargé et on mesurerait deux fois le premier,
+    # sans erreur et sans s'en apercevoir.
+    cible = POIDS / label / c["fichier"]
     if cible.exists():
         return cible
-    POIDS.mkdir(parents=True, exist_ok=True)
+    cible.parent.mkdir(parents=True, exist_ok=True)
     url = f"https://huggingface.co/{c['repo']}/resolve/main/{c['fichier']}"
     partiel = cible.with_suffix(".gguf.partial")
     print(f"  téléchargement de {c['fichier']}…", flush=True)
