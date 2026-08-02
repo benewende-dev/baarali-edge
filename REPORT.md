@@ -118,11 +118,18 @@ the model.
 | Drafting, 5 tasks | 34/36 | 34/36 | 35/36 |
 | Analysis, 5 tasks | 10/12 | 10/12 | 10/12 |
 | **Mean per task** | **91 %** | **90 %** | **91 %** |
-| **Invented numbers** | **0** | **0** | **0** |
+| **Invented numbers** | **0/10** | **0/10** | **0/10** |
 
-Zero fabricated figures across 45 pieces of writing is the result we would most want to be true,
-and it is the one we checked hardest — every number of three digits or more in every output was
-matched against its source.
+Zero fabricated figures across 30 pieces of writing is the result we would most want to be true,
+and it is the one we checked hardest: every number of three digits or more was matched against its
+source text.
+
+The check covers the 10 summarising and drafting tasks, where the set of legitimate figures is
+closed. It is **not** applied to the 5 analysis tasks, where the model is expected to derive new
+numbers — and we should say what that exclusion hides: on one of them it produced a confident but
+wrong derivation, dividing an annual spend by 1.08 to "recover" a pre-saving baseline. Bad
+arithmetic inside an analysis is a real failure mode; it is simply not one an automatic
+source-matching check can separate from correct arithmetic.
 
 What the control found that the benchmark could not:
 

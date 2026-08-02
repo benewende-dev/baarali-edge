@@ -327,9 +327,17 @@ base de comparaison, des manques parfaitement légitimes que j'avais oubliés.
 | **moyenne par épreuve** | **91 %** | **90 %** | **91 %** |
 | **nombres inventés** | **0** | **0** | **0** |
 
-Trois valeurs indiscernables, et **zéro hallucination de nombre sur les 30 rédactions** — c'est le
-résultat le plus rassurant de la série, parce qu'un résumé qui invente un montant est pire qu'un
-résumé vide : on le croit.
+Trois valeurs indiscernables, et **zéro hallucination de nombre sur les 30 copies concernées** —
+les dix épreuves de résumé et de rédaction, celles dont les chiffres légitimes forment un ensemble
+fermé, multipliées par les trois pénalités. C'est le résultat le plus rassurant de la série, parce
+qu'un résumé qui invente un montant est pire qu'un résumé vide : on le croit.
+
+**Ce que ce contrôle ne couvre pas, et il faut le dire.** Les cinq analyses en sont exclues : on y
+attend du modèle qu'il produise des chiffres neufs, et aucune comparaison automatique à la source
+ne distingue une dérivation juste d'une dérivation fausse. Or il en a produit une fausse — sur
+`manques-decision` à 1,00, il divise une dépense annuelle par 1,08 pour « retrouver » une base
+avant économie, et enchaîne deux calculs sur ce faux départ. Un contrôle qui ne mesure pas quelque
+chose doit le dire, sans quoi son silence se lit comme un succès.
 
 ## Ce qui départage, en revanche
 

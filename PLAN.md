@@ -183,7 +183,8 @@ l'emballage du travail, c'en est une partie notée.*
 - [x] **Contrôle bâti sur cette définition** → `bench/redaction.py`, 15 épreuves (5 résumer,
       5 rédiger, 5 analyser), FR + EN, huit villes plus des énoncés sans lieu, notées sans avis
       humain — dont un détecteur d'invention de nombres. Résultat : **91 % à poids égal, zéro
-      nombre inventé sur 45 rédactions**, et trois limites du socle nommées (il sacrifie un fait
+      nombre inventé sur les 30 copies où le contrôle s'applique** (les 10 épreuves à faits clos,
+      × 3 pénalités), et trois limites du socle nommées (il sacrifie un fait
       pour placer un commentaire, il classe mal l'urgence, il confond marge brute et résultat).
       → `bench/copies/redaction.md`
 - [x] **Relecture des 2 `test_prompts`** : gardés tels quels. `tp_002` est du résumé + analyse de
