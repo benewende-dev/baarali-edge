@@ -1,0 +1,20 @@
+{
+  "CMD-1042": {
+    "client": "Pharmacie Cocody Angre",
+    "montant_fcfa": "4 500 000",
+    "echeance": "12/08/2026",
+    "statut": "en retard de 25 jours"
+  },
+  "CMD-1043": {
+    "client": "Ets Kone et Freres",
+    "montant_fcfa": "1 200 000",
+    "echeance": "20/08/2026",
+    "statut": "preparee, en attente d'enlevement"
+  },
+  "CMD-1044": {
+    "client": "Mairie de Yopougon",
+    "montant_fcfa": "8 000 000",
+    "echeance": "03/09/2026",
+    "statut": "en production"
+  }
+}
