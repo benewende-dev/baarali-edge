@@ -8,8 +8,13 @@ graphics, no network — and serves as the reasoning core of an offline assistan
 companies and public bodies: read the organisation's own documents, answer with citations, keep
 every byte on the machine.
 
-> **Status: work in progress.** Numbers appear in this repository only once they have been
-> measured with the official `adtc-profiler`. Nothing here is estimated.
+**Weights:** [huggingface.co/Benewende-dev/baarali-edge-2b](https://huggingface.co/Benewende-dev/baarali-edge-2b) ·
+**Demo video:** [youtu.be/YUJUGaO2qjs](https://youtu.be/YUJUGaO2qjs) (82 s)
+
+> **Status: submitted.** Every number in this repository comes out of the official
+> `adtc-profiler`; nothing is estimated. Where a figure is arithmetic applied to a measurement
+> rather than a measurement itself — `S_perf`, the scenario columns in the comparison tables — it
+> is labelled as such at the point of use.
 
 ---
 
