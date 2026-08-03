@@ -131,16 +131,46 @@ quantize.imatrix.entries_count  186
 quantize.imatrix.chunks_count   80
 ```
 
-That calibration set is Unsloth's, and it is **generic English**. Recalibrating the importance
-matrix on francophone enterprise text — the register this submission is actually for — is the one
-technical lever we identified and did not pull. It is the only change that would make us authors
-of these weights rather than their measurers, and we are not going to imply otherwise: this
-submission's contribution is selection, measurement and packaging.
+That calibration set is Unsloth's, and it is **generic English**. Recalibrating it on francophone
+enterprise text — the register this submission is actually for — was the one lever we had
+identified and not pulled. **We have now pulled it, and it does not move.**
 
-We now have the instrument that would judge such a rebuild honestly
-([`bench/redaction.py`](bench/redaction.py), described below), which is the part that was missing
-when the idea first came up. What is missing now is compute time on an 8 GB laptop before the
-deadline, and we would rather ship a measured model than an unmeasured improvement.
+A 176 kB calibration corpus of enterprise documents, 55 % French, was built
+([`imatrix/corpus.py`](imatrix/corpus.py), fixed seed, fully reproducible), its length chosen by
+measuring 4-gram diversity at three sizes rather than by preference, and checked against every
+question that would judge it: [`imatrix/contamination.py`](imatrix/contamination.py) found an
+eight-word overlap between one template and one of our own control tasks — written by the same
+hand, in the same register — which was rewritten before anything was computed. A corpus containing
+its own exam marks its own paper.
+
+The result had to be compared against the right thing. Our first rebuild came out **23 MB heavier**
+than the shipped file, and a tensor-by-tensor check showed why: not the calibration, but the type
+map. So we rebuilt twice more — a control with the *inherited* calibration and the default map, and
+a candidate replaying the shipped file's map exactly
+([`imatrix/types-unsloth.txt`](imatrix/types-unsloth.txt)). The latter lands **32 bytes** from the
+shipped file, with an identical peak RSS across three runs, which makes any remaining difference
+attributable to calibration alone.
+
+It is not measurable. Throughput and memory: unchanged, the gap smaller than the spread between
+three runs of the same file. Accuracy: 0.670 against 0.680 on 200 `arc_easy` questions — and since
+two totals four questions apart prove nothing, we compared them **question by question**
+([`bench/apparie.py`](bench/apparie.py), McNemar):
+
+```
+identical answers   196/200  (98 %)
+shipped only right    1
+recalibrated only     3        p = 0.625
+```
+
+**Four questions out of two hundred separate the two files.** We kept the shipped weights. What
+this step produces is not a better model but an answer to a question our own report had left open,
+and the answer is negative — obtained with the control, the contamination check and the paired test
+that were needed for it to be worth anything. Full protocol and figures:
+[`bench/resultats.md`](bench/resultats.md), step 6.
+
+What this does **not** show is that importance-matrix calibration is pointless in general. One
+corpus, one model, one format, 200 questions. A format more aggressive than IQ4_XS — where fewer
+bits remain to allocate, so more is at stake in allocating them well — could well behave otherwise.
 
 ### 5. Sampling — `repeat_penalty = 1.05`, and how we got it wrong first
 

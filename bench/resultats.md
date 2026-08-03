@@ -416,3 +416,135 @@ Aucun de ces défauts ne dépend de la pénalité, ils sont dans le socle :
 
 Ces trois limites sont dans `REPORT.md` et sur la fiche du modèle, mesurées et nommées, plutôt
 qu'attendues au corrigé.
+
+---
+
+# Étape 6 — la matrice d'importance, recalibrée puis mesurée (3 août 2026)
+
+Le rapport annonçait depuis l'étape 3 un seul levier identifié et non tiré : la calibration de la
+matrice d'importance, héritée d'un tiers, calculée sur de l'anglais générique. Cette étape le tire.
+Elle conclut que **le levier ne rapporte rien**, et c'est la mesure qui le dit.
+
+## Ce qu'on a fabriqué, et pourquoi trois fichiers plutôt qu'un
+
+Une quantisation à matrice d'importance ne modifie pas les poids du modèle : elle décide **où
+dépenser la précision** au moment de les arrondir à quatre bits. La matrice se calcule en faisant
+lire un texte au modèle en pleine précision et en relevant quels poids s'activent. Changer ce
+texte, c'est changer l'arrondi — rien d'autre.
+
+Le corpus est dans `imatrix/corpus.txt`, produit par `imatrix/corpus.py` à graine fixe : 184
+documents d'entreprise, 55 % en français, du contrat au procès-verbal de réception, 88 fragments de
+512 jetons contre 80 pour la calibration héritée.
+
+Deux précautions, l'une mesurée, l'autre déclenchée par un contrôle :
+
+- **La taille du corpus est un compromis mesuré.** À texte écrit constant, l'allonger ne fait que
+  le répéter, et une matrice estimée sur des répétitions sur-pondère les tournures répétées.
+  Diversité en 4-grammes relevée sur trois tailles : 330 ko → 0,380 ; 240 ko → 0,432 ;
+  180 ko → 0,489. On garde la plus courte.
+- **`imatrix/contamination.py` a trouvé une vraie faute.** Huit mots consécutifs identiques entre
+  le gabarit « note de service » du corpus et l'épreuve `note-conges` de `bench/redaction.py` —
+  écrits par la même main, dans le même registre. Un corpus qui contient ses propres épreuves
+  s'auto-note. Gabarit réécrit ; la plus longue séquence commune est retombée à cinq mots, une
+  formule administrative banale.
+
+Le premier fichier produit pesait **23 Mo de plus** que le fichier livré. Vérification tenseur par
+tenseur : ce n'est pas la calibration, c'est le **découpage des types**. Le producteur du fichier
+livré descend `attn_qkv` en IQ4_XS et monte `ssm_out`, `ssm_alpha`, `ssm_beta`, sur toutes les
+couches sauf celles congrues à 3 modulo 4. Comparer les deux fichiers aurait mélangé deux causes
+dans un seul écart.
+
+D'où trois fichiers, et non un :
+
+| | découpage des types | calibration |
+|---|---|---|
+| **livré** | producteur du fichier | héritée, anglais générique |
+| **témoin** | défaut de `llama-quantize` | héritée |
+| **recalibré v1** | défaut de `llama-quantize` | entreprise fr/en |
+| **recalibré v2** | rejoué à l'identique (`imatrix/types-unsloth.txt`) | entreprise fr/en |
+
+`v2` pèse 1 172 996 384 octets contre 1 172 996 352 pour le livré : **32 octets d'écart**, la
+longueur d'un nom de fichier dans les métadonnées. Son pic mémoire est identique au mégaoctet près
+sur trois tours. L'écart entre ces deux-là n'est donc imputable qu'à la calibration.
+
+## Débit et mémoire — la recalibration ne coûte rien
+
+Trois tours alternés, machine propre (navigateur et service local arrêtés ; le swap est retombé de
+9,3 Go à 992 Mo avant mesure), médiane retenue.
+
+| fichier | débit médian | trois tours | pic RSS médian | S_eff |
+|---|---|---|---|---|
+| livré | 34,99 t/s | 34,4 / 35,0 / 35,0 | 1 787 Mo | 74,5 |
+| témoin | 33,58 t/s | 32,9 / 33,6 / 34,2 | 1 937 Mo | 72,3 |
+| recalibré v1 | 33,46 t/s | 33,5 / 34,1 / 33,2 | 1 997 Mo | 71,5 |
+
+Entre témoin et recalibré, l'écart de débit (0,12 t/s) est **plus petit que la dispersion des trois
+tours d'un même fichier**. C'était attendu : la calibration change les valeurs arrondies, pas la
+structure du fichier. Ce qui bouge, c'est le découpage des types — et ce n'est pas notre travail.
+
+Série séparée, livré contre v2, six mesures alternées le même jour :
+
+| fichier | débit médian | trois tours | pic RSS |
+|---|---|---|---|
+| livré | 34,78 t/s | 35,4 / 34,6 / 34,8 | 1 868 Mo (identique aux 3 tours) |
+| recalibré v2 | 34,41 t/s | 34,4 / 34,4 / 34,9 | 1 868 Mo (identique aux 3 tours) |
+
+## Justesse — les totaux, puis ce qu'ils cachent
+
+| fichier | `arc_easy`, 200 questions | contrôle domaine 1,00 / 1,05 / 1,10 | nombres inventés |
+|---|---|---|---|
+| livré | 0,670 | 91 / 90 / 91 % | 0 |
+| témoin | 0,640 | 92 / 90 / 87 % | 1 |
+| recalibré v1 | 0,680 | 92 / 93 / 93 % | 0 |
+| recalibré v2 | 0,680 | 93 / 88 / 89 % | 0 |
+
+Lu vite, le tableau plaide pour la recalibration : contre son témoin exact, elle gagne quatre points
+d'`arc_easy` et trois critères de rédaction sur 81, et fait disparaître la seule hallucination de
+montant du lot — sur `cr-chantier`, le témoin écrivait 42 000 000 et 52 000 000 quand le texte
+source dit 41 500 000.
+
+Lu correctement, il ne prouve rien. **Quatre points sur deux cents questions, ce sont huit
+réponses**, pour une erreur-type de 3,4 points. Et sur le contrôle domaine, `v2` gagne deux points
+à la pénalité 1,00 et en perd deux à 1,05 : un effet qui change de signe selon un réglage sans
+rapport est la signature du hasard, pas d'une amélioration.
+
+## Ce qui tranche : la comparaison question par question
+
+Deux totaux ne se comparent pas. Mais les deux modèles répondent aux **mêmes** questions et se
+trompent surtout aux mêmes endroits : l'information est dans les seules questions où ils divergent.
+C'est le test de McNemar, implémenté dans `bench/apparie.py`, qui reprend l'adaptateur du profileur
+officiel et conserve la trace par question que `run_benchmark` agrège et jette.
+
+```
+arc_easy, 200 questions, mêmes questions dans le même ordre
+
+  livré                 134/200  (0.670)
+  recalibré v2          136/200  (0.680)
+
+  identiques            196/200  (98 % — les deux modèles sont d'accord)
+  livré seul juste :      1
+  recalibré seul juste :  3
+
+  p = 0,625 → compatible avec le hasard : rien n'est démontré.
+```
+
+**Quatre questions sur deux cents séparent les deux fichiers.** À poids, vitesse et mémoire égaux,
+recalibrer la matrice d'importance sur le registre visé ne change pratiquement pas les décisions du
+modèle.
+
+## Décision : on garde le fichier livré
+
+Rien ne justifie de remplacer les poids publiés. Le candidat recalibré n'est ni meilleur ni pire de
+façon démontrable, et échanger un fichier déjà téléchargé, déjà mesuré trois fois et déjà cité dans
+la soumission contre un fichier statistiquement indiscernable serait du mouvement, pas du progrès.
+
+Ce que cette étape apporte n'est donc pas un meilleur modèle, c'est une réponse à une question qui
+restait ouverte dans notre propre rapport — et une réponse négative, obtenue avec le témoin, le
+contrôle de contamination et le test apparié qu'il fallait pour qu'elle vaille quelque chose.
+
+**Ce qu'on ne peut pas conclure**, et qu'il serait malhonnête de laisser entendre : que la
+calibration d'une matrice d'importance ne sert à rien en général. On a mesuré *un* corpus, *un*
+modèle, *un* format, sur *deux cents* questions et quinze tâches. Un corpus authentique plutôt que
+fabriqué, ou un format plus agressif que IQ4_XS — où il reste moins de bits à répartir, donc plus à
+gagner à bien les répartir — pourraient donner un autre résultat. Ce qui est mesuré ici, c'est que
+sur ce fichier-là, ce levier-là est plat.

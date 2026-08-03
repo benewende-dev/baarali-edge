@@ -88,12 +88,28 @@ And that documentation is scored, not decorative — it sits inside the 50%.
 
 ## What's next
 
-One lever identified and not pulled: the importance matrix. Our file is already
-an imatrix quantisation, but the calibration is inherited — generic English, 80
-chunks, computed by someone else. Recalibrating it on francophone enterprise
-text would protect the weights that matter for our actual workload at identical
-size, speed and memory. We have the instrument to judge the result; we did not
-have the compute in time. We say so rather than imply otherwise.
+We had identified one lever and left it unpulled: the importance matrix, whose
+calibration our file inherits — generic English, 80 chunks, computed by someone
+else. **We have since pulled it, and it does not move.**
+
+We built a 176 kB calibration corpus of enterprise documents, 55 % French, its
+length chosen by measuring 4-gram diversity rather than by preference. A
+contamination check found an eight-word overlap between one of our templates and
+one of our own control tasks — written by the same hand — and we rewrote the
+template before computing anything: a corpus containing its own exam marks its
+own paper. The rebuild then had to be compared against the right thing, which
+took two more files: a control on the inherited calibration, and a candidate
+replaying the shipped file's tensor map exactly, landing 32 bytes from it with
+an identical peak RSS.
+
+Throughput and memory: unchanged. Accuracy: 0.670 against 0.680 on 200
+questions — and because two totals four questions apart prove nothing, we
+compared them question by question. **196 answers out of 200 are identical.**
+p = 0.625. We kept the shipped weights and published the negative result.
+
+That leaves the next lever a real one rather than a guess: a format more
+aggressive than IQ4_XS, where fewer bits remain to allocate and more is at stake
+in allocating them well.
 ```
 
 ### `Built with` *(obligatoire, max 25 étiquettes)*

@@ -43,6 +43,14 @@ Our contribution is the **selection, measurement and packaging**: which base mod
 quantisation, which sampling settings, and the evidence for each. That evidence lives in the
 GitHub repository, not in a claim on this page.
 
+We did try to become authors of these weights rather than their measurers, by recalibrating the
+importance matrix on francophone enterprise text instead of the inherited generic-English set. It
+made no measurable difference: on 200 `arc_easy` questions the two files return **196 identical
+answers**, at identical size, speed and peak memory. So these weights are still Unsloth's, and we
+say so. The protocol — calibration corpus, contamination check, control file and paired test — is
+in [`bench/resultats.md`](https://github.com/benewende-dev/baarali-edge/blob/main/bench/resultats.md),
+step 6.
+
 ## Why this model, and why this quantisation
 
 Both decisions were measured with the official `adtc-profiler`, never chosen by reputation. Five
