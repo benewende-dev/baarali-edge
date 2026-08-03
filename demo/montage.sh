@@ -39,6 +39,7 @@ duree() { ffprobe -v error -show_entries format=duration -of csv=p=0 "$1"; }
 
 MORCEAUX=()
 AUDIOS=()
+ATTENDU=0   # somme des durées de plan, comparée au fichier rendu à la fin
 
 for i in 1 2 3 4; do
   A="$VOIX/seg$i.mp3"
@@ -70,6 +71,7 @@ for i in 1 2 3 4; do
   ffmpeg -v error -i "$A" -af "apad=whole_dur=$CIBLE" -c:a aac -b:a 192k \
     "$TRAVAIL/a$i.m4a" -y
   AUDIOS+=("$TRAVAIL/a$i.m4a")
+  ATTENDU="$(echo "$ATTENDU + $CIBLE" | bc -l)"
 done
 
 for i in 5 6; do
@@ -87,6 +89,7 @@ for i in 5 6; do
   ffmpeg -v error -i "$A" -af "apad=whole_dur=$CIBLE" -c:a aac -b:a 192k \
     "$TRAVAIL/a$i.m4a" -y
   AUDIOS+=("$TRAVAIL/a$i.m4a")
+  ATTENDU="$(echo "$ATTENDU + $CIBLE" | bc -l)"
 done
 
 # Concaténation. Le démuxeur `concat` recopie les flux sans les ré-encoder :
@@ -104,9 +107,20 @@ ffmpeg -v error -i "$TRAVAIL/video.mp4" -i "$TRAVAIL/audio.m4a" \
   -af "loudnorm=I=-16:TP=-1.5:LRA=11" \
   -c:v copy -c:a aac -b:a 192k -movflags +faststart "$SORTIE" -y
 
-# Contrôle final : la durée réelle du fichier, et le plafond du règlement.
+# Contrôle final, lu dans le fichier rendu et non dans nos intentions.
 D="$(duree "$SORTIE")"
 printf "\n  ✓ %s — %.1f s, %s\n" "$SORTIE" "$D" "$(du -h "$SORTIE" | cut -f1)"
+
+# Si le fichier ne dure pas la somme des plans, l'image et le son ont glissé
+# l'un par rapport à l'autre quelque part — la faute est invisible à l'œil sur
+# une planche-contact, et audible seulement en regardant les 82 secondes.
+ECART="$(printf '%.2f' "$(echo "if ($D > $ATTENDU) $D - $ATTENDU else $ATTENDU - $D" | bc -l)")"
+if [[ "$(echo "$ECART > 0.5" | bc -l)" == 1 ]]; then
+  printf "  ✗ desynchronisation : %.1f s attendues, %.1f s rendues (ecart %.2f s)\n" \
+    "$ATTENDU" "$D" "$ECART" >&2
+  exit 1
+fi
+
 if [[ "$(echo "$D > 120" | bc -l)" == 1 ]]; then
   echo "  ✗ DÉPASSE les 2 minutes du règlement — raccourcir la narration." >&2
   exit 1
