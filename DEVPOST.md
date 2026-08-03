@@ -154,8 +154,50 @@ voix off comprise (méthode dans `demo/NARRATION.md`).
 
 1. Téléverser sur YouTube. **Non répertoriée** — pas *privée* : une vidéo privée
    est invisible pour le jury.
-2. Titre suggéré : `Baarali Edge — offline enterprise assistant on an 8 GB laptop`.
+2. Titre : `Baarali Edge — offline enterprise assistant on an 8 GB laptop (ADTC 2026)`.
 3. Coller l'URL ici.
+
+#### Les réglages YouTube qui comptent
+
+| Champ | Valeur | Pourquoi |
+|---|---|---|
+| Langue de la vidéo | **Anglais** | déclenche les sous-titres automatiques ; la narration est en anglais |
+| Audience | *pas conçue pour les enfants* | obligatoire, sinon la mise en ligne bloque |
+| Utilisation de l'IA | **Non** | aucun des trois cas listés : pas de personne réelle à qui l'on fait dire quelque chose, pas d'image d'un lieu réel modifiée, pas de scène réaliste fabriquée. La voix de synthèse est déclarée dans `demo/NARRATION.md` |
+| Catégorie | *Science et technologie* | |
+| Miniature | `demo/captures/miniature-youtube.png` | 1280×720, sous les 2 Mo imposés |
+| Commentaires | désactivés | c'est une pièce de dossier, pas une publication |
+| Autoriser l'intégration | coché | permet au jury de lire la vidéo depuis sa propre page |
+
+Description (les horodatages créent des chapitres cliquables ; YouTube exige au
+moins trois chapitres d'au moins dix secondes, d'où le regroupement des deux
+premiers plans) :
+
+```
+Baarali Edge is an offline enterprise assistant built for the Africa Deep Tech
+Challenge 2026 — Laptop LLM track, corporate_enterprise domain.
+
+Qwen3.5-2B quantised to IQ4_XS, 1.88 B parameters, running under llama.cpp on an
+8 GB laptop, CPU only, with the Wi-Fi physically switched off. Measured with the
+official adtc-profiler, median of three runs: 31.20 tokens/s and 1,544 MB peak
+RSS against a 7,000 MB ceiling.
+
+Everything in this video runs on the machine. Nothing is simulated.
+
+0:00  The machine is offline, and the model answers anyway
+0:22  The same model over USSD, from any feature phone
+0:38  The documents stay on the disk — and the measured figures
+0:57  How we got here
+
+On the throughput shown on screen: the live demo reports about 27 tokens/s,
+because recording the screen costs CPU. The 31.20 figure comes from the official
+profiler on an otherwise idle machine. Both numbers are in the repository.
+
+Code and full report: https://github.com/benewende-dev/baarali-edge
+Model weights: https://huggingface.co/Benewende-dev/baarali-edge-2b
+
+The voice-over is synthetic. The screen recording is not.
+```
 
 ---
 
