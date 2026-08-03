@@ -43,9 +43,6 @@ Our contribution is the **selection, measurement and packaging**: which base mod
 quantisation, which sampling settings, and the evidence for each. That evidence lives in the
 GitHub repository, not in a claim on this page.
 
-> The repository goes public together with the challenge submission. Until then the GitHub links
-> on this page will not resolve — the weights above are complete and usable regardless.
-
 ## Why this model, and why this quantisation
 
 Both decisions were measured with the official `adtc-profiler`, never chosen by reputation. Five
