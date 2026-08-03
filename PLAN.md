@@ -189,8 +189,10 @@ l'emballage du travail, c'en est une partie notée.*
       → `bench/copies/redaction.md`
 - [x] **Relecture des 2 `test_prompts`** : gardés tels quels. `tp_002` est du résumé + analyse de
       manques, exactement la définition du domaine ; `tp_001` est de l'analyse contractuelle avec
-      citation, et il est **juste** à 1,00 comme à 1,05 — c'est seulement à 1,10, la valeur qu'on
-      avait retenue à tort, qu'il devenait faux. Aucun des deux n'est taillé sur mesure : ce sont
+      citation. Il produit 270 000 FCFA à 1,00 comme à 1,05 — un montant **défendable** (lecture
+      du seuil de 10 jours comme franchise), atteint par un raisonnement qui ne l'est pas (il
+      arrondit « 3 semaines et 4 jours » à trois semaines entamées). À 1,10 il n'y a plus de
+      raisonnement du tout : `(30 − 25)/7`. Aucun des deux n'est taillé sur mesure : ce sont
       des tâches ordinaires du domaine, ce que l'anti-surapprentissage exige.
 - [ ] `REPORT.md` : rédiger la prose des *Design Decisions* (tous les chiffres sont déjà mesurés)
 

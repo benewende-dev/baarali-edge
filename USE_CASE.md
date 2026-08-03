@@ -110,8 +110,11 @@ We found a hard failure mode and measured it rather than assuming it away: on in
 competence, the model does not decline — it **loops**, repeating one phrase until it exhausts the
 token budget. The default configuration of the official evaluation chain applies **no repetition
 penalty at all** (`repeat_penalty = 1.0`), so this is exactly what a grader would see.
-`bench/copies/penalite-repetition.md` records the full sweep, the fix, and — importantly — the
-cost of the fix on multi-step reasoning. See `bench/resultats.md` for the decision.
+`bench/copies/penalite-repetition.md` records the first sweep, and
+`bench/copies/redaction.md` the second — the one that overturned its conclusion, because the first
+measured arithmetic while this domain is summarising, drafting and analysis. The settled value is
+`repeat_penalty = 1.05`; `bench/resultats.md` carries both the decision and the reasoning that had
+to be withdrawn.
 
 ---
 

@@ -120,12 +120,25 @@ graine fixée) ; le débit et la mémoire ne le sont pas, et ont donc été **re
 | Q4_K_M | 0,675 | 31,6 t/s | 2,08 Go | 70,2 | 54,1 |
 | MTP-Q4_K_M | 0,675 | 31,1 t/s | 2,20 Go | 68,5 | 53,7 |
 | UD-Q4_K_XL | 0,650 | 29,4 t/s | 2,21 Go | 68,4 | 52,1 |
-| UD-Q5_K_XL | 0,680 | 29,0 t/s | 2,11 Go | 69,8 | — |
-| Q5_K_M | 0,670 | 26,7 t/s | 2,01 Go | 71,3 | — |
-| Q3_K_M | 0,630 | 30,7 t/s | 1,93 Go | 72,4 | — |
+| UD-Q5_K_XL | **0,680** | 29,0 t/s | 2,11 Go | 69,8 | 53,8 |
+| Q5_K_M | 0,670 | 26,7 t/s | 2,01 Go | 71,3 | 53,1 |
+| Q3_K_M | 0,630 | 30,7 t/s | 1,93 Go | 72,4 | 52,1 |
+
+Les trois dernières cellules de la colonne de score étaient vides au premier passage ; elles sont
+comblées ici en appliquant aux mêmes mesures la formule officielle
+`0,50·justesse + 0,30·S_perf + 0,20·S_eff`, vérifiée d'abord sur les quatre valeurs déjà publiées
+(elle les redonne au dixième près). Laisser ces cases vides revenait à ne pas classer les
+variantes les plus intéressantes.
 
 **Décision : Qwen3.5-2B en IQ4_XS.** Le plus rapide *et* le plus léger, avec la plus faible
-dispersion des quatre (1,72–1,77 Go) — donc celui dont le chiffre tiendra à l'audit.
+dispersion des quatre repassés trois fois (1,72–1,77 Go) — donc celui dont le chiffre tiendra à
+l'audit.
+
+**UD-Q5_K_XL mérite d'être nommée, parce que c'est elle qui nous bat sur la justesse** : 0,680,
+la meilleure des sept, contre nos 0,670. Elle perd quand même au total (53,8 contre 55,4), et
+l'arithmétique du barème dit pourquoi : ce point de justesse vaut 0,5 point de score final, tandis
+que les 18 % de débit et les 5,4 points de `S_eff` qu'elle abandonne en valent plus du double.
+C'est tout l'argument de cette piste en une ligne de tableau — et le cacher l'aurait affaibli.
 
 ### Quatre idées reçues tombées à la mesure
 
@@ -185,6 +198,11 @@ les pénalités et un réussi à toutes. Deux énoncés discriminants ne décide
 | 1,20 | 3 / 3 | 5/6 | 4/12 |
 
 ## Décision : `repeat_penalty = 1.10`
+
+> ⚠️ **Cette décision a été renversée à l'étape 5.** Le contrôle ci-dessous est arithmétique, or le
+> domaine est rédactionnel — et à 1,10 le modèle fabrique une formule sur `tp_001`. La valeur
+> retenue est **1,05**. Ce qui suit est conservé parce que le raisonnement erroné fait partie du
+> dossier, pas parce qu'il conclut juste.
 
 C'est **la plus petite valeur qui supprime les trois boucles**, et elle le fait à **coût nul
 mesuré** : 6/6 et 9/12, exactement comme sans pénalité. Au-delà, la falaise est brutale — 1,15 fait
@@ -343,7 +361,7 @@ chose doit le dire, sans quoi son silence se lit comme un succès.
 
 | Épreuve décisive | 1,00 | 1,05 | 1,10 |
 |---|---|---|---|
-| `tp_001` — pénalité de retard, réponse 270 000 FCFA | ✅ juste | ✅ **juste** | ❌ **63 450 FCFA** |
+| `tp_001` — pénalité de retard | 270 000 FCFA | **270 000 FCFA** | ❌ **63 450 FCFA**, formule inventée |
 | `manques-decision` — dégénérescence **dans le domaine** | ❌ div 0,60, coupé au budget | ✅ div 0,99 | ✅ div 1,00 |
 | boucle-1 (dioula) | ❌ 0,05 | ✅ 1,00 | ✅ 1,00 |
 | boucle-2 (dioula) | ❌ 0,02 | ✅ 1,00 | ✅ 1,00 |
@@ -356,9 +374,18 @@ un échantillon ». **C'était faux.** Refaite à température nulle, elle se re
 à 1,10 le modèle invente une formule — `(30 − 25) / 7` — et conclut 63 450 FCFA. Sur le prompt que
 nous déclarons publiquement et que le jury exécutera.
 
-1,05 est la seule valeur qui tienne les deux bouts :
+**Précision indispensable : 270 000 FCFA est *défendable*, pas *juste*.** Le montant tient si l'on
+lit le seuil de dix jours comme une franchise — il reste 15 jours, soit trois semaines entamées à
+2 %. Mais le modèle ne raisonne pas ainsi : il divise 25 par 7, obtient « 3 semaines et 4 jours »,
+et appelle cela trois semaines entamées — il arrondit une semaine entamée **vers le bas**, ce que
+la clause interdit. Il atteint un nombre défendable par un chemin qui ne l'est pas. C'est la limite
+relevée dès l'étape 1 (« arrondit à la baisse »), et aucune pénalité ne la corrige. À 1,10, en
+revanche, il n'y a plus de chemin du tout : `(30 − 25)/7` ne correspond à rien dans le contrat.
 
-- elle garde `tp_001` **juste**, avec la clause citée mot pour mot ;
+1,05 est la valeur qui tient les deux bouts :
+
+- elle maintient le modèle sur le raisonnement défendable plutôt que sur la formule fabriquée,
+  avec la clause citée mot pour mot ;
 - elle supprime la dégénérescence observée **dans le domaine** (`manques-decision` passe de 1/2 à
   2/2, la diversité de 0,60 à 0,99) ;
 - elle coûte **un critère sur quatre-vingt-un** face à 1,00, c'est-à-dire rien de mesurable.

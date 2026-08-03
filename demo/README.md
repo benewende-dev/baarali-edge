@@ -34,7 +34,7 @@ operator: weeks of paperwork and a commercial contract. **We claim no short code
 
 The first version of this handler asked the model to answer in one sentence under 150 characters.
 Measured against the real model, it answered *"25 jours de retard génère 10% de pénalité"* — wrong,
-where the reasoned answer is 270 000 FCFA — and on an off-topic question it produced *"Le Burkina
+where reasoning at full length yields 270 000 FCFA — and on an off-topic question it produced *"Le Burkina
 Faso est une PME ivoirienne"*, the role instruction leaking into the answer. **Denying a small
 model its intermediate steps denies it the calculation.**
 

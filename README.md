@@ -46,6 +46,8 @@ REPORT.md             Technical report: problem, design, constraints, benchmarks
 USE_CASE.md           The African use case, sourced — and what we do not claim
 model/                Weights land here at download time — never committed
 bench/                Our own measurement runs and the reasoning behind each choice
+demo/                 The USSD channel — offline reach from any handset, no data plan
+hf/                   The model card published alongside the weights
 PLAN.md               Working plan (French)
 ```
 
@@ -63,13 +65,19 @@ its competence the model degenerates into a repeated phrase until the token budg
 the evaluation chain applies no repetition penalty by default. An 18-item arithmetic control
 pointed at 1.10. A later control built to match this track's actual definition — *summarization,
 drafting and analysis* — showed that at 1.10 the model answers our own published test prompt
-`tp_001` with **63,450 FCFA instead of 270,000**, inventing a formula to get there. Reproducible
-at temperature 0.
+`tp_001` with **63,450 FCFA**, from a formula, `(30 − 25) / 7`, that corresponds to nothing in the
+contract. At 1.00 and 1.05 it produces **270,000 FCFA** instead. Reproducible at temperature 0.
 
-**1.05 is the only value that holds both ends**: `tp_001` stays correct with the contract clause
-quoted verbatim, the in-domain degeneracy disappears (diversity 0.60 → 0.99 on the case that
-showed it), and it costs **one criterion out of 81** against no penalty at all — nothing
-measurable. Above 1.10, multi-step reasoning collapses outright: 9/12 → 4/12 at 1.15.
+270,000 is *defensible*, not *right*, and the difference matters: the figure follows if the
+ten-day threshold is read as a grace period, but the model does not read it that way — it divides
+25 by 7 and calls "3 weeks and 4 days" three weeks begun, rounding a begun week down. It lands on
+a defensible number by an indefensible route. No penalty value fixes that; it is a limitation of
+the base model, recorded as such in [`REPORT.md`](REPORT.md).
+
+**1.05 is the value that holds both ends**: it keeps the model on that route rather than the
+fabricated one, the in-domain degeneracy disappears (diversity 0.60 → 0.99 on the case that showed
+it), and it costs **one criterion out of 81** against no penalty at all — nothing measurable.
+Above 1.10, multi-step reasoning collapses outright: 9/12 → 4/12 at 1.15.
 
 Full sweeps: [`bench/resultats.md`](bench/resultats.md),
 [`bench/copies/redaction.md`](bench/copies/redaction.md) (15 writing tasks, 3 penalties) and

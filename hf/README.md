@@ -43,26 +43,57 @@ Our contribution is the **selection, measurement and packaging**: which base mod
 quantisation, which sampling settings, and the evidence for each. That evidence lives in the
 GitHub repository, not in a claim on this page.
 
+> The repository goes public together with the challenge submission. Until then the GitHub links
+> on this page will not resolve — the weights above are complete and usable regardless.
+
 ## Why this model, and why this quantisation
 
 Both decisions were measured with the official `adtc-profiler`, never chosen by reputation. Five
-base models between 0.8 B and 4.2 B parameters were profiled, then seven quantisations of the
-winner. Full tables: [`bench/resultats.md`](https://github.com/benewende-dev/baarali-edge/blob/main/bench/resultats.md).
+base models, from 0.75 B to 4.21 B measured parameters, were profiled; then **all seven**
+quantisations of the winner. Full tables:
+[`bench/resultats.md`](https://github.com/benewende-dev/baarali-edge/blob/main/bench/resultats.md).
 
-Measured on an Apple M1 / 8 GB, CPU only (`-ngl 0`, enforced by the profiler), median of three
-runs. Absolute figures differ from the reference i5 laptop; the comparison between candidates does
-not.
+Measured on an Apple M1 / 8 GB, CPU only (`-ngl 0`, enforced by the profiler). Throughput and peak
+memory are the **median of three runs** — a single memory reading is worthless, and we have the
+scar to prove it: one variant showed 1.47 GB on its first pass and 2.21 GB as its true median.
+Accuracy is a **single deterministic run** (temperature 0, fixed seed, 200 `arc_easy` questions);
+repeating it would return the same number. Absolute values differ from the reference i5 laptop; the
+ranking between candidates does not.
 
-| Quantisation | Accuracy (`arc_easy`) | Throughput | Peak RAM |
-|---|---|---|---|
-| **IQ4_XS** *(shipped)* | 0.670 | **34.3 t/s** | **1.74 GB** |
-| Q4_K_M | 0.675 | 31.6 t/s | 2.08 GB |
-| Q5_K_M | 0.670 | 26.7 t/s | 2.01 GB |
-| UD-Q4_K_XL | 0.650 | 29.4 t/s | 2.21 GB |
-| Q3_K_M | 0.630 | 30.7 t/s | 1.93 GB |
+| Quantisation | Accuracy | Throughput | Peak RAM | S_eff | Total @150 t/s |
+|---|---|---|---|---|---|
+| **IQ4_XS** *(shipped)* | 0.670 | **34.3 t/s** | **1.74 GB** | **75.2** | **55.4** |
+| Q4_K_M | 0.675 | 31.6 t/s | 2.08 GB | 70.2 | 54.1 |
+| UD-Q5_K_XL | **0.680** | 29.0 t/s | 2.11 GB | 69.8 | 53.8 |
+| MTP-Q4_K_M | 0.675 | 31.1 t/s | 2.20 GB | 68.5 | 53.7 |
+| Q5_K_M | 0.670 | 26.7 t/s | 2.01 GB | 71.3 | 53.1 |
+| UD-Q4_K_XL | 0.650 | 29.4 t/s | 2.21 GB | 68.4 | 52.1 |
+| Q3_K_M | 0.630 | 30.7 t/s | 1.93 GB | 72.4 | 52.1 |
 
-IQ4_XS is the fastest *and* the lightest, with the tightest run-to-run spread (1.72–1.77 GB).
-Paying for Q5 bought no accuracy at all — 0.670, identical, for 25 % more weight.
+The last column is not a measurement: it is the official scoring function
+`0.50·accuracy + 0.30·S_perf + 0.20·S_eff` applied to the measured cells, under the assumption that
+the fastest submission in the contest reaches 150 t/s. `S_perf` is scored relative to that
+submission, so the assumption has to be stated rather than hidden.
+
+**The variant that beats us is in the table on purpose.** UD-Q5_K_XL scores 0.680 against our
+0.670 — the best accuracy of the seven. It still loses overall, and the arithmetic says by how
+much: that extra point of accuracy is worth **0.5** of final score, while the 18 % throughput and
+5.4 S_eff it gives up cost it **2.1** — a net 1.6 in our favour, which is exactly the 55.4 against
+53.8 in the table. That is the whole argument for this track in one row, and hiding the row would
+have made the argument weaker, not stronger.
+
+IQ4_XS is also the fastest and the lightest, and its three runs sat within 1.72–1.77 GB — the
+narrowest spread we recorded, which matters because it is the figure that has to survive an
+independent re-measurement.
+
+### The shipped file, measured as a package
+
+The table above ranks candidates. The number that describes **this file as it is submitted** —
+fetched by `download_model.sh`, three profiler runs, median — is **31.20 t/s and 1 544 MB peak**.
+It is lower than the 34.3 t/s above and that is not a contradiction to explain away: it is
+run-to-run and thermal variance on a fanless 8 GB laptop, measured weeks apart. The ranking table
+is used only to **compare** variants measured back to back; the packaged figure is the one we
+self-report.
 
 ## Recommended inference settings
 
@@ -76,13 +107,22 @@ repetition penalty by default**.
 
 The value was measured twice, and the second measurement overturned the first. An arithmetic
 control of 18 items pointed at 1.10. A second control of 15 summarisation, drafting and analysis
-tasks — the genre this model is actually for — showed that 1.10 makes it answer a contract-penalty
-question with **63,450 FCFA instead of 270,000**, inventing a formula to get there. Reproducible at
-temperature 0.
+tasks — the genre this model is actually for — showed what that had cost. On a contract-penalty
+question, 1.00 and 1.05 both produce **270,000 FCFA**, a defensible amount; 1.10 produces
+**63,450 FCFA** by inventing a formula, `(30 − 25) / 7`, that corresponds to nothing in the
+contract. Reproducible at temperature 0.
 
-1.05 keeps that answer correct, still removes the degeneration (diversity 0.60 → 0.99 on the case
-that showed it), and costs one criterion out of 81 against no penalty at all. Above 1.10 the
-collapse is not subtle: multi-step reasoning falls from 9/12 to 4/12 at 1.15.
+To be precise about what "defensible" means here, because it is not the same as right: 270,000
+follows if the ten-day threshold is read as a grace period, leaving 15 days — three weeks begun —
+at 2 % each. The model does not reason that way. It divides 25 by 7, gets "3 weeks and 4 days", and
+calls that three weeks begun, which rounds a begun week *down*. It reaches a defensible number by
+an indefensible route. That rounding failure is listed under limitations below and it is not fixed
+by any penalty value.
+
+1.05 keeps the model on that route rather than the fabricated one, still removes the degeneration
+(diversity 0.60 → 0.99 on the case that showed it), and costs one criterion out of 81 against no
+penalty at all. Above 1.10 the collapse is not subtle: multi-step reasoning falls from 9/12 to 4/12
+at 1.15.
 
 Sweeps and full transcripts:
 [`bench/copies/redaction.md`](https://github.com/benewende-dev/baarali-edge/blob/main/bench/copies/redaction.md),
@@ -94,7 +134,7 @@ Sweeps and full transcripts:
   "the language of Cameroon"; asked for Wolof, "the language of Tigré". `dyu` was consequently
   removed from the submission's `language_scope`. Working languages are French and English.
 - **Rounding to a *week begun*** — a common clause in West African supply contracts — is wrong at
-  every configuration we tested.
+  every configuration we tested. It rounds down: 25 days becomes "three weeks begun".
 - **It drops a fact to make room for a comment.** Told to summarise a clinic report in exactly
   three bullets, it sacrificed the 71 % bed-occupancy figure to write "requires immediate
   intervention". Summarising a client thread, it never quoted the order reference.
@@ -102,13 +142,18 @@ Sweeps and full transcripts:
   days last, as "low urgency" — it had restated the order of the question with justifications
   attached.
 - **It confuses accounting definitions**, computing gross margin as revenue minus fixed costs.
+- **It can derive numbers confidently and wrongly.** Analysing a purchasing proposal, it divided an
+  annual spend by 1.08 to "recover" a pre-saving baseline, then built two further figures on that
+  false start.
 
-None of these depend on sampling settings; they are in the base model. All three were found by
+None of these depend on sampling settings; they are in the base model. The last four were found by
 [`bench/redaction.py`](https://github.com/benewende-dev/baarali-edge/blob/main/bench/redaction.py),
 a 15-task control scored without human judgement.
-- 2 B parameters is a deliberate trade. The scoring function puts 50 % of its weight on throughput
-  and memory; a larger model would have to be ~22 accuracy points better to break even, and it is
-  not.
+
+**2 B parameters is a deliberate trade, not a limitation we are apologising for.** Half of the
+score is throughput and memory. Measured on the same machine at the Q4_K_M stage, Qwen3.5-4B is
+6 accuracy points better — 0.735 against 0.675 — and still loses on total score, 52.6 against
+56.5 in the same 150 t/s scenario, because it runs at 44 % of the speed and takes 1.4× the memory.
 
 ## Licence
 
