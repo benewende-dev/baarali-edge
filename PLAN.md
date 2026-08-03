@@ -162,7 +162,11 @@ Ce n'est pas une décoration : c'est l'équivalent de 20 points de justesse, pou
 l'emballage du travail, c'en est une partie notée.*
 
 - [ ] `REPORT.md` : problème, décisions de conception, contraintes, **chiffres mesurés**
-- [ ] Vidéo de **2 minutes maximum**. Plan de tournage arrêté à l'étape 3, avec ce qu'on a :
+- [x] **Démonstration filmable, en une prise** → `demo/tournage.py`, chronométrée à **25 s** :
+      contrôle réseau (refuse de démarrer si la machine répond), `tp_002` généré en flux, session
+      USSD complète, puis fichiers locaux + chiffres du profileur. Un seul chargement des poids.
+      Consignes de tournage et texte à dire : `demo/TOURNAGE.md`.
+- [ ] **Filmer** (à faire par toi — je ne peux pas tenir la caméra). Plan initial, conservé ici :
 
       | Durée | Plan | Ce que ça prouve |
       |---|---|---|
