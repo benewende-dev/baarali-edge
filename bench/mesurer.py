@@ -109,6 +109,38 @@ CANDIDATS: dict[str, dict[str, str]] = {
         "params": "2B",
         "licence": "apache-2.0",
     },
+    # ── Étape 6 : la même quantification, calibrée par nous ───────────────────
+    # Produit localement par `bash imatrix/recalibrer.sh` : mêmes poids de base,
+    # même format IQ4_XS, seule change la matrice d'importance qui décide où
+    # dépenser la précision. Il n'y a donc rien à télécharger — le dépôt indiqué
+    # est celui des poids de départ, pour mémoire.
+    #
+    # Ce candidat ne se compare qu'à une mesure de `q2b-iq4xs` prise le même
+    # jour : le rapport documente déjà 34,3 puis 31,2 t/s sur le MÊME fichier à
+    # deux semaines d'écart. Confronter une recalibration à un chiffre d'avant-
+    # hier mesurerait la dérive thermique de la machine, pas la recalibration.
+    "q2b-iq4xs-baarali": {
+        "repo": "unsloth/Qwen3.5-2B-GGUF",
+        "fichier": "Qwen3.5-2B-IQ4_XS-baarali.gguf",
+        "params": "2B",
+        "licence": "apache-2.0",
+    },
+    # Le témoin, sans lequel la comparaison ne voudrait rien dire. Il est
+    # quantifié depuis le même BF16, par le même `llama-quantize`, avec la
+    # matrice **héritée** — seule la calibration le sépare du candidat ci-dessus.
+    #
+    # Il a fallu le fabriquer parce que le fichier livré ne fait pas un témoin
+    # valable : mesuré tenseur par tenseur, son producteur a retenu un autre
+    # découpage des types (18 tenseurs en Q5_K là où llama-quantize met IQ4_XS,
+    # et l'inverse sur 18 autres), soit 23 Mo d'écart. Le comparer directement
+    # aurait mélangé deux causes — la calibration et ce découpage — dans un seul
+    # écart, et aucune mesure n'aurait pu les séparer après coup.
+    "q2b-iq4xs-temoin": {
+        "repo": "unsloth/Qwen3.5-2B-GGUF",
+        "fichier": "Qwen3.5-2B-IQ4_XS-temoin.gguf",
+        "params": "2B",
+        "licence": "apache-2.0",
+    },
 }
 
 
