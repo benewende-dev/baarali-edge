@@ -67,6 +67,7 @@ Usage : .venv/bin/python bench/redaction.py [label]
 from __future__ import annotations
 
 import json
+import pathlib
 import re
 import sys
 import time
@@ -74,8 +75,20 @@ import unicodedata
 
 from mesurer import CANDIDATS, POIDS, RACINE
 
-SORTIE = RACINE / "bench" / "copies" / "redaction.md"
+COPIES = RACINE / "bench" / "copies"
 LABEL_DEFAUT = "q2b-iq4xs"
+
+
+def fichier_sortie(label: str) -> pathlib.Path:
+    """Une copie par modèle. Le candidat livré garde son nom historique.
+
+    Écrit d'abord dans un fichier unique, ce script écrasait la copie du modèle
+    livré dès qu'on le lançait sur un autre — ce qui, dans une comparaison,
+    revient à détruire le terme auquel on compare.
+    """
+    if label == LABEL_DEFAUT:
+        return COPIES / "redaction.md"
+    return COPIES / f"redaction-{label}.md"
 
 # 1,00 = le défaut de la chaîne officielle. 1,10 = la décision de l'étape 3,
 # prise sur le contrôle arithmétique. 1,05 s'est invitée en cours de route : elle
@@ -672,9 +685,10 @@ def main() -> int:
                 L.append(f"- {'✓' if ok else '✗'} {libelle}")
             L.append("\n```\n" + (extrait or "(réponse vide)") + "\n```\n")
 
-    SORTIE.parent.mkdir(parents=True, exist_ok=True)
-    SORTIE.write_text("\n".join(L))
-    print(f"→ {SORTIE.relative_to(RACINE)}")
+    sortie = fichier_sortie(label)
+    sortie.parent.mkdir(parents=True, exist_ok=True)
+    sortie.write_text("\n".join(L))
+    print(f"→ {sortie.relative_to(RACINE)}")
     return 0
 
 
