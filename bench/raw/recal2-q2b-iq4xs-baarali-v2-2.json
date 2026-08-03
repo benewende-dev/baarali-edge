@@ -31,7 +31,7 @@
       }
     ],
     "model": {
-      "name": "Qwen3.5-2B-IQ4_XS",
+      "name": "Qwen3.5-2B-IQ4_XS-baarali-v2",
       "runtime": "llama.cpp",
       "quantization": "GGUF Q4_K_M",
       "parameters_estimate": "2B",
@@ -46,19 +46,19 @@
     "os": "macOS-26.5.2-arm64-arm-64bit"
   },
   "throughput": {
-    "tokens_per_second_generation": 34.78,
-    "first_token_latency_ms": 3248.9,
+    "tokens_per_second_generation": 34.41,
+    "first_token_latency_ms": 3296.81,
     "prompt_tokens": 512,
     "generated_tokens": 128
   },
   "memory": {
-    "peak_rss_mb": 1867.95,
-    "steady_state_rss_mb": 1793.07,
-    "peak_vms_mb": 852986.78
+    "peak_rss_mb": 1868.16,
+    "steady_state_rss_mb": 1793.67,
+    "peak_vms_mb": 852987.95
   },
   "accuracy": [],
   "cpu_thermal": {
-    "cpu_percent_p99": 65.2,
+    "cpu_percent_p99": 68.3,
     "core_temp_c_peak": null,
     "throttled": false
   },

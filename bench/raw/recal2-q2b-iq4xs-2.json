@@ -46,19 +46,19 @@
     "os": "macOS-26.5.2-arm64-arm-64bit"
   },
   "throughput": {
-    "tokens_per_second_generation": 34.78,
-    "first_token_latency_ms": 3248.9,
+    "tokens_per_second_generation": 34.63,
+    "first_token_latency_ms": 3248.83,
     "prompt_tokens": 512,
     "generated_tokens": 128
   },
   "memory": {
-    "peak_rss_mb": 1867.95,
-    "steady_state_rss_mb": 1793.07,
-    "peak_vms_mb": 852986.78
+    "peak_rss_mb": 1867.98,
+    "steady_state_rss_mb": 1803.75,
+    "peak_vms_mb": 852987.34
   },
   "accuracy": [],
   "cpu_thermal": {
-    "cpu_percent_p99": 65.2,
+    "cpu_percent_p99": 69.6,
     "core_temp_c_peak": null,
     "throttled": false
   },

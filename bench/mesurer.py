@@ -141,6 +141,18 @@ CANDIDATS: dict[str, dict[str, str]] = {
         "params": "2B",
         "licence": "apache-2.0",
     },
+    # Le candidat qui réunit les deux moitiés. Le découpage relevé sur le fichier
+    # livré suit un motif régulier — toutes les couches sauf celles congrues à 3
+    # modulo 4 — et `--tensor-type-file` le rejoue tenseur par tenseur, avec
+    # notre calibration. À 32 octets près, la longueur d'un nom de fichier dans
+    # les métadonnées, il pèse exactement le poids du fichier livré : l'écart
+    # entre les deux n'est donc imputable qu'à la calibration.
+    "q2b-iq4xs-baarali-v2": {
+        "repo": "unsloth/Qwen3.5-2B-GGUF",
+        "fichier": "Qwen3.5-2B-IQ4_XS-baarali-v2.gguf",
+        "params": "2B",
+        "licence": "apache-2.0",
+    },
 }
 
 
