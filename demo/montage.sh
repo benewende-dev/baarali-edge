@@ -35,6 +35,12 @@ FINS=(8.4 17.4 28.4 32.0)
 BLANC=0.5
 BLANC_FIN=1.2
 
+# L'écran filmé est en 16:10, le lecteur des plateformes vidéo en 16:9. Sans
+# cela la vidéo s'affiche entre deux bandes noires ; on élargit donc le cadre
+# avec la couleur de fond du terminal, relevée au pixel sur la prise — les
+# bandes existent toujours, mais elles ne se voient pas.
+CADRE="pad=3200:1800:160:0:0x1D232D"
+
 duree() { ffprobe -v error -show_entries format=duration -of csv=p=0 "$1"; }
 
 MORCEAUX=()
@@ -63,7 +69,7 @@ for i in 1 2 3 4; do
   # `-t` et non `-to` : après un `-ss` placé avant `-i`, `-to` se compte depuis
   # le début du fichier selon les versions de ffmpeg, `-t` jamais.
   ffmpeg -v error -ss "${DEBUTS[$((i-1))]}" -t "$D_PLAN" -i "$PRISE" \
-    -vf "tpad=stop_mode=clone:stop_duration=$GEL,fps=30" -an \
+    -vf "tpad=stop_mode=clone:stop_duration=$GEL,fps=30,$CADRE" -an \
     -c:v libx264 -crf 18 -preset veryfast -pix_fmt yuv420p "$TRAVAIL/v$i.mp4" -y
   MORCEAUX+=("$TRAVAIL/v$i.mp4")
 
@@ -82,7 +88,7 @@ for i in 5 6; do
   CIBLE="$(echo "$D_AUDIO + $([[ $i -eq 6 ]] && echo "$BLANC_FIN" || echo "$BLANC")" | bc -l)"
   printf "  carton %d : %5.1f s (voix %5.1f s)\n" "$i" "$CIBLE" "$D_AUDIO"
 
-  ffmpeg -v error -loop 1 -t "$CIBLE" -i "$IMG" -vf "fps=30" \
+  ffmpeg -v error -loop 1 -t "$CIBLE" -i "$IMG" -vf "fps=30,$CADRE" \
     -c:v libx264 -crf 18 -preset veryfast -pix_fmt yuv420p "$TRAVAIL/v$i.mp4" -y
   MORCEAUX+=("$TRAVAIL/v$i.mp4")
 

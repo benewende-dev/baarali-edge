@@ -149,7 +149,7 @@ The English answer above came from a French order record on this disk. Official 
 ⚠️ **Devpost ne prend pas le fichier : il veut une URL** YouTube, Vimeo,
 Facebook Video ou Youku. Il faut donc téléverser d'abord.
 
-La vidéo est montée : **`demo/video-soumission.mp4`**, 82 s, 2880×1800, 7,0 Mo,
+La vidéo est montée : **`demo/video-soumission.mp4`**, 82 s, 3200×1800 (16:9), 8,0 Mo,
 voix off comprise (méthode dans `demo/NARRATION.md`).
 
 1. Téléverser sur YouTube. **Non répertoriée** — pas *privée* : une vidéo privée
