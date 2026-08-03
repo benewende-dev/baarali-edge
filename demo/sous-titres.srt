@@ -1,0 +1,88 @@
+1
+00:00:00,000 --> 00:00:01,444
+Eight gigabytes of RAM.
+
+2
+00:00:01,444 --> 00:00:02,700
+Integrated graphics.
+
+3
+00:00:02,700 --> 00:00:04,646
+No network, the ping proves it.
+
+4
+00:00:04,646 --> 00:00:07,157
+Everything you see runs on this machine.
+
+5
+00:00:08,400 --> 00:00:12,148
+Eighty percent of Ivorian firms report power cuts.
+
+6
+00:00:12,148 --> 00:00:13,872
+A laptop has a battery;
+
+7
+00:00:13,872 --> 00:00:15,446
+a fibre box does not.
+
+8
+00:00:15,446 --> 00:00:22,193
+So the assistant answers here, one of our two declared prompts, generated now, on the CPU.
+
+9
+00:00:22,700 --> 00:00:26,107
+The same model, reachable by USSD from any phone.
+
+10
+00:00:26,107 --> 00:00:31,045
+No data plan, no app, one hundred and eighty-two characters per screen.
+
+11
+00:00:31,045 --> 00:00:34,174
+The order file it reads is written in French;
+
+12
+00:00:34,174 --> 00:00:37,929
+the answer comes back in English, on the same machine.
+
+13
+00:00:38,400 --> 00:00:40,271
+The documents stay on the disk.
+
+14
+00:00:40,271 --> 00:00:46,308
+On screen you just saw about twenty-seven tokens per second, because recording the screen costs CPU.
+
+15
+00:00:46,308 --> 00:00:50,172
+Measured clean with the official profiler, median of three runs:
+
+16
+00:00:50,172 --> 00:00:56,451
+thirty-one point two tokens per second, one point five gigabytes peak, against a seven gigabyte ceiling.
+
+17
+00:00:57,000 --> 00:00:59,797
+Getting here was measurement, not intuition.
+
+18
+00:00:59,797 --> 00:01:04,757
+We profiled five open base models, then all seven quantisations of the winner.
+
+19
+00:01:04,757 --> 00:01:08,381
+One decision we had already published, we later reversed:
+
+20
+00:01:08,381 --> 00:01:12,386
+a second control showed the first had measured the wrong thing.
+
+21
+00:01:12,900 --> 00:01:17,670
+Every number in our report is measured, including the ones that do not flatter us.
+
+22
+00:01:17,670 --> 00:01:21,102
+The repository names the variant that beats us on accuracy.
+
