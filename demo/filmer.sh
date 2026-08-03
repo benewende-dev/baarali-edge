@@ -230,7 +230,22 @@ fi
 # 37 s pour une scène de 31. Un ré-encodage à crf 18 coupe à la image près, tient
 # le texte de terminal net, et divise le poids par deux.
 if command -v ffmpeg >/dev/null; then
-  ffmpeg -v error -i "$BRUT" -t "$UTILE" \
+  # La durée se lit dans le fichier, pas au chronomètre. Mesuré le 2 août : la
+  # capture s'est arrêtée à 31 s pendant que la scène tournait encore, et l'acte
+  # 4 manquait au film — le script a annoncé une prise réussie parce qu'il
+  # regardait sa montre. La dernière image écrite est la seule source de vérité.
+  DERNIERE=$(ffprobe -v error -select_streams v:0 -show_entries packet=pts_time \
+             -of csv=p=0 "$BRUT" 2>/dev/null | tail -1)
+  DERNIERE=${DERNIERE:-0}
+  if [[ $(echo "$DERNIERE < $UTILE - 3" | bc -l 2>/dev/null) == 1 ]]; then
+    echo "  ✗ enregistrement tronqué : la scène a duré $((UTILE - 2)) s, la capture" >&2
+    echo "    s'arrête à ${DERNIERE%.*} s. Laisser refroidir la machine et refaire." >&2
+    mv "$BRUT" "${SORTIE%.mov}-tronquee.mov"
+    exit 1
+  fi
+  # `-r 30` force une cadence constante : la capture est à cadence variable et
+  # un lecteur annonce alors une durée qui n'a rien à voir avec l'image.
+  ffmpeg -v error -i "$BRUT" -t "$UTILE" -r 30 \
     -c:v libx264 -crf 18 -preset veryfast -pix_fmt yuv420p -c:a aac \
     "$SORTIE" -y && rm -f "$BRUT"
 else

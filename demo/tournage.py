@@ -144,6 +144,15 @@ def acte_localite() -> None:
     cmd = charger_commandes()
     print(f"  The documents it read are here: {GRAS}demo/commandes.json{FIN} "
           f"({len(cmd)} orders, on this disk)\n")
+    # La source de la réponse de l'acte 3, montrée et non affirmée. Sans ces deux
+    # lignes, « il répond à partir des documents de l'entreprise » est une
+    # revendication que le spectateur doit croire sur parole — et c'est l'une des
+    # revendications centrales du dépôt. Elle rend aussi le bilinguisme lisible :
+    # la pièce est en français, la réponse était en anglais.
+    src = cmd["CMD-1042"]
+    print(f'    "CMD-1042": {{ "client": "{src["client"]}",')
+    print(f'                  "statut": "{src["statut"]}" }}')
+    print(f"    {GRIS}← the French record the English answer above came from{FIN}\n")
     bruts = sorted((RACINE / "bench" / "raw").glob("final-iq4xs-*.json"))
     debits, pics = [], []
     for f in bruts:
