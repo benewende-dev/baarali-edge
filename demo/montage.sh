@@ -46,7 +46,9 @@ for i in 1 2 3 4; do
   D_AUDIO="$(duree "$A")"
   CIBLE="$(echo "$D_AUDIO + $BLANC" | bc -l)"
   D_PLAN="$(echo "${FINS[$((i-1))]} - ${DEBUTS[$((i-1))]}" | bc -l)"
-  GEL="$(echo "if ($CIBLE > $D_PLAN) $CIBLE - $D_PLAN else 0" | bc -l)"
+  # `printf` et non la sortie brute de bc : sous 1 seconde, bc écrit « .61 » sans
+  # le zéro de tête, et ffmpeg refuse cette écriture comme durée.
+  GEL="$(printf '%.3f' "$(echo "if ($CIBLE > $D_PLAN) $CIBLE - $D_PLAN else 0" | bc -l)")"
 
   printf "  plan %d : %5.1f s de film + %5.1f s de gel = %5.1f s (voix %5.1f s)\n" \
     "$i" "$D_PLAN" "$GEL" "$CIBLE" "$D_AUDIO"
@@ -90,7 +92,11 @@ done
 ffmpeg -v error -f concat -safe 0 -i "$TRAVAIL/liste-v.txt" -c copy "$TRAVAIL/video.mp4" -y
 ffmpeg -v error -f concat -safe 0 -i "$TRAVAIL/liste-a.txt" -c copy "$TRAVAIL/audio.m4a" -y
 
+# `loudnorm` amène la bande son à -16 LUFS, la cible des plateformes web. Sans
+# elle, une voix grave sort autour de -19 dB et le jury doit monter le volume —
+# on ne lui laisse pas ce geste à faire.
 ffmpeg -v error -i "$TRAVAIL/video.mp4" -i "$TRAVAIL/audio.m4a" \
+  -af "loudnorm=I=-16:TP=-1.5:LRA=11" \
   -c:v copy -c:a aac -b:a 192k -movflags +faststart "$SORTIE" -y
 
 # Contrôle final : la durée réelle du fichier, et le plafond du règlement.

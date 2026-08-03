@@ -117,11 +117,14 @@ c'est l'URL de clonage, elle ne fait que rediriger (301 vérifié) vers la page.
 
 ### `Image gallery`
 
-Quatre captures prêtes, tirées de la vidéo, au format 3:2 recommandé, bien sous
-les 5 Mo :
+Cinq images prêtes, au format 3:2 recommandé, bien sous les 5 Mo. **Téléverser
+`00-carte.png` en premier** : Devpost fait de la première image la vignette du
+projet, et l'acte 1 — un écran presque vide, c'est tout son propos — ferait une
+mauvaise vignette.
 
 | Fichier | Ce qu'elle montre |
 |---|---|
+| `demo/captures/00-carte.png` | la carte d'identité : modèle, domaine, liens |
 | `demo/captures/01.png` | le `ping` sans réponse — le hors-ligne, vérifié |
 | `demo/captures/02.png` | le modèle qui répond à `tp_002`, en cours de génération |
 | `demo/captures/03.png` | la session USSD complète, au compteur de caractères |
@@ -132,7 +135,7 @@ les 5 Mo :
 ⚠️ **Devpost ne prend pas le fichier : il veut une URL** YouTube, Vimeo,
 Facebook Video ou Youku. Il faut donc téléverser d'abord.
 
-La vidéo est montée : **`demo/video-soumission.mp4`**, 87 s, 2880×1800, 7,8 Mo,
+La vidéo est montée : **`demo/video-soumission.mp4`**, 90 s, 2880×1800, 8,0 Mo,
 voix off comprise (méthode dans `demo/NARRATION.md`).
 
 1. Téléverser sur YouTube. **Non répertoriée** — pas *privée* : une vidéo privée
