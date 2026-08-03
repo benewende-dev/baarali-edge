@@ -1,0 +1,1 @@
+The same model, reachable by USSD from any phone. No data plan, no app, one hundred and eighty-two characters per screen. The order file it reads is written in French; the answer comes back in English, on the same machine.

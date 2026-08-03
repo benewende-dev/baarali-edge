@@ -1,100 +1,85 @@
-# Voix off — texte à poser sur la prise muette
+# Voix off et montage de la vidéo de soumission
 
-La prise brute (`bash demo/filmer.sh`) dure ~30 s et n'a pas de son. Ce texte se
-pose dessus au montage. **192 mots, soit ~77 s** à un débit posé de 150 mots par
-minute — sous le plafond de 2 minutes du règlement, qui dit *« a short video
+La prise brute (`bash demo/filmer.sh`) dure 32 s et n'a pas de son. La vidéo
+finale en dure **87 s**, sous le plafond du règlement — *« a short video
 (max 2 minutes) »* : c'est un plafond, pas une durée à remplir.
 
-⚠️ **La voix est plus longue que l'image** (77 s contre 30 s), et c'est voulu :
-le règlement demande *« explaining your solution **and development journey** »*,
-or le parcours ne se filme pas. Au montage, tenir la dernière image pendant les
-segments 5 et 6, ou poser un carton noir avec le lien du dépôt.
+L'écart entre les deux est voulu. Le règlement demande *« explaining your
+solution **and development journey** »*, or le parcours ne se filme pas : il se
+raconte. Le montage donne donc à chaque plan la durée exacte de la phrase qui le
+commente, et pose les deux derniers segments sur des cartons de texte plutôt que
+sur une image figée.
 
 **En anglais.** Tous nos fichiers publics le sont, et c'est la langue du jury.
-Le français avec sous-titres anglais serait défendable, mais on ne prend pas ce
-pari pour rien.
 
-L'écran montre **que** ça marche. La voix ne doit dire que **pourquoi ça
-compte** — c'est là que sont les 10 points du cas d'usage africain, et l'écran
-ne les montrera jamais tout seul.
+L'écran montre **que** ça marche. La voix ne dit que **pourquoi ça compte** —
+c'est là que sont les 10 points du cas d'usage africain, et l'écran ne les
+montrera jamais tout seul.
 
 ---
 
-## Le texte
-
-### 1 — sur l'acte 1, le `ping` sans réponse *(~8 s, 20 mots)*
-
-> Eight gigabytes of RAM. Integrated graphics. No network — the ping proves it.
-> Everything you see runs on this machine.
-
-### 2 — sur l'acte 2, le modèle qui génère *(~14 s, 34 mots)*
-
-> Eighty percent of Ivorian firms report power cuts. A laptop has a battery; a
-> fibre box does not. So the assistant answers here — one of our two declared
-> prompts, generated now, on the CPU.
-
-### 3 — sur l'acte 3, la session USSD *(~14 s, 36 mots)*
-
-> The same model, reachable by USSD from any phone — no data plan, no app, one
-> hundred and eighty-two characters per screen. The order file it reads is
-> written in French; the answer comes back in English, on the same machine.
-
-*Ne pas sauter la dernière phrase : c'est la seule preuve visible du bilinguisme,
-et elle est à l'écran — le document est en français, la réponse en anglais.*
-
-### 4 — sur l'acte 4, les fichiers locaux et les chiffres *(~14 s, 33 mots)*
-
-> The documents stay on the disk. Measured with the official profiler, CPU only,
-> median of three runs: thirty-one tokens per second, one point five gigabytes
-> peak, against a seven gigabyte ceiling.
-
-### 5 — le parcours, sur la dernière image tenue *(~18 s, 44 mots)*
-
-*C'est le segment que le règlement réclame et que l'écran ne peut pas montrer.*
-
-> Getting here was measurement, not intuition. We profiled five open base models,
-> then all seven quantisations of the winner. One decision we had already
-> published, we later reversed — a second control showed the first had measured
-> the wrong thing.
-
-### 6 — carton de fin *(~10 s, 24 mots)*
-
-> Every number in our report is measured, including the ones that do not flatter
-> us. The repository names the variant that beats us on accuracy.
-
----
-
-## Trois précautions
-
-**Les chiffres se disent en toutes lettres**, pas en chiffres : une voix
-synthétique lit « 31.20 » de travers une fois sur deux. Le texte ci-dessus est
-déjà écrit ainsi.
-
-**Ne pas lire un chiffre que la prise contredit.** L'acte 2 affiche un compte de
-jetons mesuré pendant l'enregistrement, or capturer l'écran en 60 images par
-seconde coûte du processeur : il sortira sous nos 31,20. La voix parle du
-**profileur officiel, médiane de trois passages** — ce n'est pas la même mesure,
-et le dire ainsi est exact. Si le montage laisse les deux chiffres à l'image en
-même temps, ajouter un sous-titre `llama-bench, median of 3`.
-
-**Ne rien promettre que le dépôt ne tienne.** Pas de langue africaine : le modèle
-n'en parle aucune et c'est écrit noir sur blanc dans les limites.
-
----
-
-## Coller la voix sur l'image
+## Refaire la vidéo en une commande
 
 ```bash
-# voix.m4a : la bande son, montée à la longueur de la prise
-ffmpeg -i demo/prise-AAAAMMJJ-HHMMSS.mov -i voix.m4a \
-       -c:v copy -c:a aac -b:a 192k -shortest video-soumission.mp4
+bash demo/montage.sh demo/voix demo/prise-AAAAMMJJ-HHMMSS.mov video-soumission.mp4
 ```
 
-`-c:v copy` recopie l'image sans la ré-encoder : aucune perte de netteté sur le
-texte du terminal, qui est le seul contenu à lire à l'écran.
+`demo/voix/` contient les six segments (`seg1.mp3` … `seg6.mp3`), leur texte
+source (`seg1.txt` …) et les deux cartons de fin. Le script refuse de rendre un
+fichier au-delà de deux minutes.
 
-Vérifier avant de téléverser :
+Pour refaire les cartons après une correction de texte :
 
 ```bash
-ffprobe -v error -show_entries format=duration -of default=nw=1 video-soumission.mp4
+python demo/cartons.py    # nécessite Pillow ; les PNG produits sont versionnés
 ```
+
+## Le texte, tel qu'il a été dit
+
+| Segment | Sur quoi | Durée mesurée |
+|---|---|---|
+| 1 | acte 1, le `ping` sans réponse | 7,9 s |
+| 2 | acte 2, le modèle qui génère | 12,5 s |
+| 3 | acte 3, la session USSD | 15,3 s |
+| 4 | acte 4, les fichiers locaux et les chiffres | 20,6 s |
+| 5 | carton « How we got here » | 18,1 s |
+| 6 | carton de fin | 9,3 s |
+
+Le texte exact de chaque segment est dans `demo/voix/segN.txt` — ce sont les
+fichiers réellement passés au moteur, pas une transcription approchée.
+
+**La voix est synthétique** (ElevenLabs v3 via une passerelle commerciale). Rien
+dans le règlement ne l'interdit, et c'est la seule façon d'obtenir une diction
+anglaise nette sans studio.
+
+## Trois précautions, dont une qui a changé le texte
+
+**Les chiffres se disent en toutes lettres**, pas en chiffres : un moteur de
+synthèse lit « 31.20 » de travers une fois sur deux. Les fichiers `.txt` sont
+déjà écrits ainsi.
+
+**Le chiffre à l'écran contredit le chiffre officiel — on le dit à voix haute.**
+L'acte 2 affiche *« 214 tokens in 8 s »*, soit 26,8 jetons/s, quand le rapport
+annonce 31,20 : enregistrer l'écran à 60 images par seconde coûte du processeur.
+Taire l'écart aurait laissé un jury faire la division tout seul. Le segment 4
+l'énonce donc : *« On screen you just saw about twenty-seven tokens per second,
+because recording the screen costs CPU. Measured clean with the official
+profiler, median of three runs: thirty-one point two… »*. Sur une soumission
+dont l'argument est que chaque chiffre est mesuré, c'est la seule version
+tenable.
+
+**Ne rien promettre que le dépôt ne tienne.** Pas de langue africaine : le
+modèle n'en parle aucune et c'est écrit noir sur blanc dans les limites.
+
+## Comment le montage tient les 87 secondes
+
+Les frontières des quatre actes ont été relevées **image par image** sur une
+planche-contact à une image par seconde, pas estimées : 0 / 8,4 / 17,4 / 28,4 s.
+Chaque plan est ensuite allongé par un gel de sa dernière image jusqu'à couvrir
+sa phrase. Le gel est une image fixe, jamais un ralenti — un terminal ralenti se
+voit immédiatement.
+
+Conséquence utile : l'acte 4, qui ne dure que 3,6 s dans la prise, reste 21 s à
+l'écran. C'est le plan le plus dense — la fiche source en français, la réponse
+anglaise au-dessus, les deux chiffres du profileur — et c'était le seul qu'on
+n'avait pas le temps de lire.

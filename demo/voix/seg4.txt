@@ -1,0 +1,1 @@
+The documents stay on the disk. On screen you just saw about twenty-seven tokens per second, because recording the screen costs CPU. Measured clean with the official profiler, median of three runs: thirty-one point two tokens per second, one point five gigabytes peak, against a seven gigabyte ceiling.

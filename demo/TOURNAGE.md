@@ -73,7 +73,15 @@ fiche publique du modèle : ne pas la filmer n'est pas la cacher.
 
 ## Après
 
-Téléverser la vidéo, puis remplir le brouillon Devpost — il ne demande que
+Le montage — voix off, gels et cartons de fin — est décrit dans
+[`NARRATION.md`](NARRATION.md) et se rejoue en une commande :
+
+```bash
+bash demo/montage.sh demo/voix demo/prise-AAAAMMJJ-HHMMSS.mov video-soumission.mp4
+```
+
+Téléverser ensuite la vidéo (Devpost n'accepte qu'une **URL**, jamais un
+fichier), puis remplir le brouillon — il ne demande que
 `Project Report Public URL on Github`, les deux prompts de test, le domaine,
 `Self Reported Sperf` et `Self Reported Seff`. Tout est dans `submission.json`
 et dans <https://github.com/benewende-dev/baarali-edge>.

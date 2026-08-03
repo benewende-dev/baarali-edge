@@ -111,6 +111,10 @@ https://github.com/benewende-dev/baarali-edge
 https://huggingface.co/Benewende-dev/baarali-edge-2b
 ```
 
+**Deux liens, pas un.** Le dépôt contient la méthode ; les poids sont sur
+Hugging Face et c'est ce que le jury exécute. Et **sans le suffixe `.git`** :
+c'est l'URL de clonage, elle ne fait que rediriger (301 vérifié) vers la page.
+
 ### `Image gallery`
 
 Quatre captures prêtes, tirées de la vidéo, au format 3:2 recommandé, bien sous
@@ -128,10 +132,12 @@ les 5 Mo :
 ⚠️ **Devpost ne prend pas le fichier : il veut une URL** YouTube, Vimeo,
 Facebook Video ou Youku. Il faut donc téléverser d'abord.
 
-1. Poser la voix off sur `demo/prise-20260802-184109.mov` (29 s, 2880×1800) —
-   texte et commande `ffmpeg` dans `demo/NARRATION.md`.
-2. Téléverser sur YouTube. **Non répertoriée** suffit et vaut mieux que privée :
-   une vidéo privée est invisible pour le jury.
+La vidéo est montée : **`demo/video-soumission.mp4`**, 87 s, 2880×1800, 7,8 Mo,
+voix off comprise (méthode dans `demo/NARRATION.md`).
+
+1. Téléverser sur YouTube. **Non répertoriée** — pas *privée* : une vidéo privée
+   est invisible pour le jury.
+2. Titre suggéré : `Baarali Edge — offline enterprise assistant on an 8 GB laptop`.
 3. Coller l'URL ici.
 
 ---
