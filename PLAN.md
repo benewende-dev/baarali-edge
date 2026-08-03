@@ -74,10 +74,13 @@ pourront pas produire.
 - [x] Profil Devpost complet (spécialité, compétences, admissibilité, bio)
 - [x] S'inscrire au challenge (« Participez au hackathon » → formulaire *Registre*) — fait ;
       il reste le brouillon de soumission à compléter (étape 6)
-- [ ] **`team_id`** — vérifié le 1er août : **aucun champ `team_id` n'existe**, ni à l'inscription,
-      ni dans « Additional info », et le « portail ADTF » dont parle le gabarit n'existe pas. On
-      pose donc `baarali-edge` et on demande confirmation sur le Discord. Ne pas laisser la valeur
-      d'exemple : leur liste de contrôle refuse les valeurs par défaut.
+- [x] **`team_id` = `baarali-edge`** — clos le 2 août. Le champ est le premier obligatoire du
+      `metadata.json` du gabarit (`| team_id | ✅ | Your unique team ID as registered on the ADTF
+      portal |`), avec `your-team-id` en valeur d'exemple que la liste de contrôle interdit de
+      laisser. Mais **ce portail n'existe pas** : le site du challenge dit *« Create your free
+      submission on DevPost and officially join the challenge »*, aucun système n'attribue d'ID,
+      et **il n'y a ni Discord ni Slack** à qui demander. `baarali-edge` satisfait l'exigence
+      (unique, non-exemple). Rien à confirmer auprès de personne.
 - [ ] **Demander les 5 heures de crédits GPU** — ce n'est pas sur Devpost : l'annonce est dans
       l'onglet *Updates*, le formulaire est chez **Africa GPU Hub** →
       <https://aghcloud.ai/philanthropy?program=3850810a-8f62-474c-b448-e204d026b189>
@@ -178,7 +181,11 @@ l'emballage du travail, c'en est une partie notée.*
       contrôle réseau (refuse de démarrer si la machine répond), `tp_002` généré en flux, session
       USSD complète, puis fichiers locaux + chiffres du profileur. Un seul chargement des poids.
       Consignes de tournage et texte à dire : `demo/TOURNAGE.md`.
-- [ ] **Filmer** (à faire par toi — je ne peux pas tenir la caméra). Plan initial, conservé ici :
+- [ ] **Filmer.** L'image est automatisée → `bash demo/filmer.sh` : coupe le Wi-Fi, enregistre
+      l'écran, joue les quatre actes, referme le fichier, rétablit le réseau (`trap`, donc même
+      en cas d'échec). La prise dure ~28 s, muette. La voix se pose au montage : texte anglais
+      calibré à 137 mots / ~55 s dans `demo/NARRATION.md`, avec la commande `ffmpeg` de collage.
+      Plan initial, conservé ici :
 
       | Durée | Plan | Ce que ça prouve |
       |---|---|---|
