@@ -130,12 +130,26 @@ mauvaise vignette.
 | `demo/captures/03.png` | la session USSD complète, au compteur de caractères |
 | `demo/captures/04.png` | les fichiers locaux et les chiffres du profileur |
 
+Les légendes (`Caption`, 140 caractères maximum), dans le même ordre :
+
+```
+Qwen3.5-2B in IQ4_XS: 31.20 tokens/s and 1,544 MB peak RSS on an 8 GB laptop, CPU only, no network. Every figure measured, not estimated.
+
+The network is off and verified, not claimed: ping gets no reply. Everything that follows runs with no connection of any kind.
+
+One of our two declared test prompts, generated live on the CPU: an internal note summarised for management. No GPU, no cloud fallback.
+
+The same model over USSD from any feature phone: no data plan, no app, 182 characters per screen, offline. The reach the office model lacks.
+
+The English answer above came from a French order record on this disk. Official profiler, median of 3 runs: 31.20 tokens/s, 1,544 MB peak.
+```
+
 ### `Video demo link` *(obligatoire)*
 
 ⚠️ **Devpost ne prend pas le fichier : il veut une URL** YouTube, Vimeo,
 Facebook Video ou Youku. Il faut donc téléverser d'abord.
 
-La vidéo est montée : **`demo/video-soumission.mp4`**, 90 s, 2880×1800, 8,0 Mo,
+La vidéo est montée : **`demo/video-soumission.mp4`**, 82 s, 2880×1800, 7,0 Mo,
 voix off comprise (méthode dans `demo/NARRATION.md`).
 
 1. Téléverser sur YouTube. **Non répertoriée** — pas *privée* : une vidéo privée

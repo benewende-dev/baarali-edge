@@ -44,11 +44,16 @@ for i in 1 2 3 4; do
   A="$VOIX/seg$i.mp3"
   [[ -f "$A" ]] || { echo "manque $A" >&2; exit 1; }
   D_AUDIO="$(duree "$A")"
-  CIBLE="$(echo "$D_AUDIO + $BLANC" | bc -l)"
   D_PLAN="$(echo "${FINS[$((i-1))]} - ${DEBUTS[$((i-1))]}" | bc -l)"
+  # La durée du plan est le **maximum** des deux : jamais on ne coupe du film
+  # pour rattraper une phrase courte — ça produirait un saut d'image — et jamais
+  # on ne laisse une phrase déborder sur le plan suivant. Quand la voix est plus
+  # courte que le film, c'est le silence qui s'allonge, pas l'image qui se coupe.
+  CIBLE="$(echo "if ($D_AUDIO + $BLANC > $D_PLAN) $D_AUDIO + $BLANC else $D_PLAN" | bc -l)"
   # `printf` et non la sortie brute de bc : sous 1 seconde, bc écrit « .61 » sans
   # le zéro de tête, et ffmpeg refuse cette écriture comme durée.
-  GEL="$(printf '%.3f' "$(echo "if ($CIBLE > $D_PLAN) $CIBLE - $D_PLAN else 0" | bc -l)")"
+  CIBLE="$(printf '%.3f' "$CIBLE")"
+  GEL="$(printf '%.3f' "$(echo "$CIBLE - $D_PLAN" | bc -l)")"
 
   printf "  plan %d : %5.1f s de film + %5.1f s de gel = %5.1f s (voix %5.1f s)\n" \
     "$i" "$D_PLAN" "$GEL" "$CIBLE" "$D_AUDIO"

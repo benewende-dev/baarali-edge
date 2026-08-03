@@ -1,7 +1,7 @@
 # Voix off et montage de la vidéo de soumission
 
 La prise brute (`bash demo/filmer.sh`) dure 32 s et n'a pas de son. La vidéo
-finale en dure **90 s**, sous le plafond du règlement — *« a short video
+finale en dure **82 s**, sous le plafond du règlement — *« a short video
 (max 2 minutes) »* : c'est un plafond, pas une durée à remplir.
 
 L'écart entre les deux est voulu. Le règlement demande *« explaining your
@@ -38,17 +38,17 @@ python demo/cartons.py    # nécessite Pillow ; les PNG produits sont versionné
 
 | Segment | Sur quoi | Durée mesurée |
 |---|---|---|
-| 1 | acte 1, le `ping` sans réponse | 8,5 s |
-| 2 | acte 2, le modèle qui génère | 14,2 s |
-| 3 | acte 3, la session USSD | 15,9 s |
-| 4 | acte 4, les fichiers locaux et les chiffres | 22,3 s |
-| 5 | carton « How we got here » | 16,0 s |
-| 6 | carton de fin | 9,2 s |
+| 1 | acte 1, le `ping` sans réponse | 7,2 s |
+| 2 | acte 2, le modèle qui génère | 13,8 s |
+| 3 | acte 3, la session USSD | 15,2 s |
+| 4 | acte 4, les fichiers locaux et les chiffres | 18,1 s |
+| 5 | carton « How we got here » | 15,4 s |
+| 6 | carton de fin | 8,2 s |
 
 Le texte exact de chaque segment est dans `demo/voix/segN.txt` — ce sont les
 fichiers réellement passés au moteur, pas une transcription approchée.
 
-**La voix est synthétique** (ElevenLabs v3 via une passerelle commerciale, voix « Brian »). Rien
+**La voix est synthétique** (ElevenLabs v3 via une passerelle commerciale, voix « Liam »). Rien
 dans le règlement ne l'interdit, et c'est la seule façon d'obtenir une diction
 anglaise nette sans studio.
 
@@ -71,15 +71,18 @@ tenable.
 **Ne rien promettre que le dépôt ne tienne.** Pas de langue africaine : le
 modèle n'en parle aucune et c'est écrit noir sur blanc dans les limites.
 
-## Comment le montage tient les 90 secondes
+## Comment le montage tient les 82 secondes
 
 Les frontières des quatre actes ont été relevées **image par image** sur une
 planche-contact à une image par seconde, pas estimées : 0 / 8,4 / 17,4 / 28,4 s.
-Chaque plan est ensuite allongé par un gel de sa dernière image jusqu'à couvrir
-sa phrase. Le gel est une image fixe, jamais un ralenti — un terminal ralenti se
-voit immédiatement.
+Chaque plan dure ensuite le **maximum** de deux choses : la longueur du film et
+la longueur de sa phrase. Quand la phrase est plus longue, un gel de la dernière
+image comble — une image fixe, jamais un ralenti, un terminal ralenti se voit
+immédiatement. Quand la phrase est plus courte, c'est le silence qui s'allonge :
+raccourcir le film à la place produirait un saut d'image, et décalerait toute la
+suite du montage.
 
-Conséquence utile : l'acte 4, qui ne dure que 3,6 s dans la prise, reste 23 s à
+Conséquence utile : l'acte 4, qui ne dure que 3,6 s dans la prise, reste 19 s à
 l'écran. C'est le plan le plus dense — la fiche source en français, la réponse
 anglaise au-dessus, les deux chiffres du profileur — et c'était le seul qu'on
 n'avait pas le temps de lire.
