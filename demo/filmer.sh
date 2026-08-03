@@ -42,6 +42,8 @@ FEU_VERT="$ATELIER/go"      # le joueur attend ce fichier : la capture démarre 
 FINI="$ATELIER/fini"        # le joueur pose ce fichier : la capture peut s'arrêter
 PID_CAPTURE=""
 ID_FENETRE=""
+DOCK_AVANT=""   # état du Dock avant la prise, pour le remettre comme on l'a trouvé
+MASQUEES=""     # applications masquées le temps de la prise, à rouvrir ensuite
 
 # Le filet. Quoi qu'il arrive — erreur, Ctrl-C, script tué — le réseau revient,
 # l'enregistrement est refermé proprement et la fenêtre est rangée. Sans ça, un
@@ -52,6 +54,18 @@ nettoyer() {
     wait "$PID_CAPTURE" 2>/dev/null
   fi
   [[ -n "$ID_FENETRE" ]] && osascript -e "tell application \"Terminal\" to close (every window whose id is $ID_FENETRE)" >/dev/null 2>&1
+  if [[ -n "$MASQUEES" ]]; then
+    while IFS= read -r app; do
+      [[ -z "$app" ]] && continue
+      osascript -e "tell application \"System Events\" to set visible of process \"$app\" to true" >/dev/null 2>&1
+    done <<< "$MASQUEES"
+    echo "  applications rouvertes : $(echo "$MASQUEES" | tr '\n' ' ')"
+    MASQUEES=""
+  fi
+  if [[ -n "$DOCK_AVANT" ]]; then
+    osascript -e "tell application \"System Events\" to set autohide of dock preferences to $DOCK_AVANT" >/dev/null 2>&1
+    DOCK_AVANT=""
+  fi
   if [[ $REPETITION -eq 0 ]]; then
     networksetup -setairportpower "$INTERFACE" on >/dev/null 2>&1
     echo "  réseau rétabli sur $INTERFACE"
@@ -101,6 +115,32 @@ networksetup -setairportpower "$INTERFACE" off || {
 }
 sleep 2
 
+# Les autres applications masquées le temps de la prise, puis rouvertes par le
+# trap. Mesuré le 2 août : une fenêtre de scène « plein écran » ne l'est pas
+# tout à fait — la barre de titre de la fenêtre du dessous dépassait de quinze
+# pixels en haut à droite. Agrandir la fenêtre ne suffit pas ; il faut qu'il n'y
+# ait rien derrière.
+MASQUEES=$(osascript -e 'tell application "System Events" to get name of every process whose visible is true and name is not "Terminal"' 2>/dev/null | tr ',' '\n' | sed 's/^ *//;s/ *$//')
+if [[ -n "$MASQUEES" ]]; then
+  while IFS= read -r app; do
+    [[ -z "$app" ]] && continue
+    osascript -e "tell application \"System Events\" to set visible of process \"$app\" to false" >/dev/null 2>&1
+  done <<< "$MASQUEES"
+  echo "  applications masquées : $(echo "$MASQUEES" | tr '\n' ' ')"
+  sleep 1
+fi
+
+# Le Dock masqué le temps de la prise, puis remis exactement comme il était (le
+# trap s'en charge, même en cas d'échec). Sans ça, une rangée d'icônes
+# personnelles court en bas de l'image pendant toute la démonstration.
+DOCK_AVANT=$(osascript -e 'tell application "System Events" to get autohide of dock preferences' 2>/dev/null)
+if [[ -n "$DOCK_AVANT" ]]; then
+  osascript -e 'tell application "System Events" to set autohide of dock preferences to true' >/dev/null 2>&1
+  sleep 1
+else
+  echo "  ⚠️  Dock non masqué (autorisation « Automatisation » refusée) : il sera à l'image."
+fi
+
 echo "  ouverture de la fenêtre de scène…"
 ID_FENETRE=$(osascript <<AS
 tell application "Terminal"
@@ -109,8 +149,20 @@ tell application "Terminal"
   delay 0.6
   set font size of current settings of front window to $POLICE
   set bounds of front window to {0, 0, 1440, 900}
-  return id of front window
+  set fenetre to id of front window
 end tell
+-- Plein écran natif. Redimensionner ne suffit pas : la fenêtre du dessous —
+-- Claude Code, lui aussi dans Terminal.app, donc impossible à masquer sans
+-- masquer la scène — laissait dépasser sa barre de titre en haut à droite. Le
+-- plein écran recouvre jusqu'à la barre de menus, donc plus rien ne peut
+-- déborder. On y perd l'icône Wi-Fi barrée : la preuve du hors-ligne reste le
+-- ping de l'acte 1, qui vaut mieux qu'une icône.
+try
+  tell application "System Events" to tell process "Terminal" ¬
+    to set value of attribute "AXFullScreen" of window 1 to true
+  delay 2
+end try
+return fenetre
 AS
 ) || { echo "  ✗ impossible d'ouvrir la fenêtre Terminal" >&2; exit 1; }
 sleep 1.5
@@ -172,10 +224,15 @@ if [[ ! -s "$BRUT" ]]; then
   exit 1
 fi
 
-# Le recadrage temporel. `-c copy` ne ré-encode rien : coupe instantanée et texte
-# de terminal intact, or le texte est le seul contenu à lire à l'image.
+# Le recadrage temporel, ré-encodé et non recopié. `-c copy` semble préférable
+# — coupe instantanée, aucune perte — mais il s'aligne sur les images-clés : la
+# capture n'en pose qu'une toutes les treize secondes, et le fichier annonçait
+# 37 s pour une scène de 31. Un ré-encodage à crf 18 coupe à la image près, tient
+# le texte de terminal net, et divise le poids par deux.
 if command -v ffmpeg >/dev/null; then
-  ffmpeg -v error -i "$BRUT" -t "$UTILE" -c copy "$SORTIE" -y && rm -f "$BRUT"
+  ffmpeg -v error -i "$BRUT" -t "$UTILE" \
+    -c:v libx264 -crf 18 -preset veryfast -pix_fmt yuv420p -c:a aac \
+    "$SORTIE" -y && rm -f "$BRUT"
 else
   mv "$BRUT" "$SORTIE"
   echo "  ⚠️  ffmpeg absent : le film n'a pas été recoupé, vérifie sa fin à la main."

@@ -231,6 +231,15 @@ mesurent. Donc toute la page se remplit avec un seul `submission.json` et l'URL 
 ⚠️ Les deux prompts sont saisis **deux fois** (Devpost + `metadata.json`) : ils doivent être
 rigoureusement identiques, sans quoi l'audit compare deux choses différentes.
 
+**Les deux chiffres à taper, arrêtés le 2 août :**
+
+| Champ | Valeur | D'où elle sort |
+|---|---|---|
+| `Self Reported Seff` | **77,9** | `100 × (7 000 − 1 544) ÷ 7 000`, pic médian des 3 passages finaux. Aucune ambiguïté. |
+| `Self Reported Sperf` | **20,8** | `100 × 31,20 ÷ 150`. Le barème est **relatif à la meilleure soumission reçue** — dénominateur inconnaissable avant les résultats. On déclare donc sous l'hypothèse déjà publiée partout ailleurs (`Total @150 t/s` dans `REPORT.md` et sur la fiche du modèle). Déclarer autre chose ici nous mettrait en contradiction avec nos propres tableaux. |
+
+Personne à qui demander l'arbitrage : il n'existe ni portail ADTF, ni Discord, ni Slack.
+
 - [x] Dépôt **public** : <https://github.com/benewende-dev/baarali-edge> (2 août 2026)
 - [ ] Passer la liste de contrôle du gabarit officiel, ligne par ligne
 - [ ] Étapes 3, 4 et 5 du brouillon Devpost remplies (histoire, vidéo, scores)
