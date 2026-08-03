@@ -72,13 +72,19 @@ pourront pas produire.
 
 **À faire par toi (humain) :**
 - [x] Profil Devpost complet (spécialité, compétences, admissibilité, bio)
-- [ ] S'inscrire au challenge (« Participez au hackathon » → formulaire *Registre*)
+- [x] S'inscrire au challenge (« Participez au hackathon » → formulaire *Registre*) — fait ;
+      il reste le brouillon de soumission à compléter (étape 6)
 - [ ] **`team_id`** — vérifié le 1er août : **aucun champ `team_id` n'existe**, ni à l'inscription,
       ni dans « Additional info », et le « portail ADTF » dont parle le gabarit n'existe pas. On
       pose donc `baarali-edge` et on demande confirmation sur le Discord. Ne pas laisser la valeur
       d'exemple : leur liste de contrôle refuse les valeurs par défaut.
-- [ ] **Demander les 5 heures de crédits GPU offertes par Udutech** — c'est gratuit, ça met du
-      temps à être accordé, et c'est ce qui rendra un affinage possible sans dépenser un franc
+- [ ] **Demander les 5 heures de crédits GPU** — ce n'est pas sur Devpost : l'annonce est dans
+      l'onglet *Updates*, le formulaire est chez **Africa GPU Hub** →
+      <https://aghcloud.ai/philanthropy?program=3850810a-8f62-474c-b448-e204d026b189>
+      Conditions citées : *« up to 5 hours »*, *« granted based on the quality of your
+      application »*, *« apply early; availability is limited »*, et surtout **les crédits servent
+      à l'entraînement, jamais à la mesure** — *« final benchmarks must still run on the ADTC
+      Standard Laptop profile »*. Notre chaîne de mesure ne bouge donc pas.
 - [x] ~~Récupérer le jeu de validation du domaine Entreprise/PME~~ — **il n'y en a pas pour nous.**
       `adtc_profiler/accuracy.py` : « the full hidden 30 % validation subset distributed by
       **judges** », et l'onglet Ressources renvoie 404. Ce qu'on a est la définition du domaine :
