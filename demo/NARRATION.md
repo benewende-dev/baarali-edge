@@ -1,11 +1,11 @@
 # Voix off — texte à poser sur la prise muette
 
-La prise brute (`bash demo/filmer.sh`) dure ~32 s et n'a pas de son. Ce texte se
-pose dessus au montage. **181 mots, soit ~72 s** à un débit posé de 150 mots par
+La prise brute (`bash demo/filmer.sh`) dure ~30 s et n'a pas de son. Ce texte se
+pose dessus au montage. **192 mots, soit ~77 s** à un débit posé de 150 mots par
 minute — sous le plafond de 2 minutes du règlement, qui dit *« a short video
 (max 2 minutes) »* : c'est un plafond, pas une durée à remplir.
 
-⚠️ **La voix est plus longue que l'image** (72 s contre 32 s), et c'est voulu :
+⚠️ **La voix est plus longue que l'image** (77 s contre 30 s), et c'est voulu :
 le règlement demande *« explaining your solution **and development journey** »*,
 or le parcours ne se filme pas. Au montage, tenir la dernière image pendant les
 segments 5 et 6, ou poser un carton noir avec le lien du dépôt.
@@ -33,10 +33,14 @@ ne les montrera jamais tout seul.
 > fibre box does not. So the assistant answers here — one of our two declared
 > prompts, generated now, on the CPU.
 
-### 3 — sur l'acte 3, la session USSD *(~10 s, 25 mots)*
+### 3 — sur l'acte 3, la session USSD *(~14 s, 36 mots)*
 
-> The same model, reachable by USSD from any phone. No data plan, no app, one
-> hundred and eighty-two characters per screen — the real limit.
+> The same model, reachable by USSD from any phone — no data plan, no app, one
+> hundred and eighty-two characters per screen. The order file it reads is
+> written in French; the answer comes back in English, on the same machine.
+
+*Ne pas sauter la dernière phrase : c'est la seule preuve visible du bilinguisme,
+et elle est à l'écran — le document est en français, la réponse en anglais.*
 
 ### 4 — sur l'acte 4, les fichiers locaux et les chiffres *(~14 s, 33 mots)*
 

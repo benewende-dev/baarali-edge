@@ -43,6 +43,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import textwrap
 from pathlib import Path
@@ -75,21 +76,72 @@ PENALITE = 1.05
 # On sépare donc : il raisonne librement, puis on condense. Deux appels valent
 # largement mieux qu'une mauvaise réponse — une session USSD tient largement le
 # temps supplémentaire.
-CONSIGNE_RAISONNER = (
-    "Tu es l'assistant interne d'une PME ivoirienne. Tu réponds à partir des "
-    "documents de l'entreprise fournis ci-dessous quand il y en a. Raisonne étape "
-    "par étape, puis termine par une ligne « Conclusion : » qui donne la réponse "
-    "et le montant exact en FCFA s'il y en a un. Réponds en français. Si la "
-    "question sort de ton domaine ou que tu n'as pas l'information, dis-le."
-)
-CONSIGNE_CONDENSER = (
-    "Réécris la conclusion suivante en UNE phrase de moins de 140 caractères, en "
-    "français, en conservant le chiffre exact s'il y en a un. Pas de formatage, "
-    "pas de liste, pas de préambule. Donne uniquement la phrase."
-)
+# Deux langues, un seul canal. Le français est la langue de service par défaut :
+# c'est celle des PME visées. L'anglais existe parce que `language_scope` déclare
+# les deux et qu'une démonstration destinée à un jury anglophone ne doit pas se
+# lire à travers une traduction.
+#
+# Les **documents de l'entreprise restent en français** dans les deux cas. C'est
+# volontaire : le modèle lit une commande rédigée en français et répond dans la
+# langue de la question. C'est la situation réelle d'une PME d'Abidjan dont les
+# pièces sont en français et dont le partenaire écrit en anglais.
+LANGUE = os.environ.get("BAARALI_USSD_LANG", "fr")
 
-# Les données de l'entreprise restent sur la machine : c'est tout l'argument.
-# Un fichier plat suffit à le montrer, et se lit sans base de données.
+_CONSIGNES = {
+    "fr": (
+        "Tu es l'assistant interne d'une PME ivoirienne. Tu réponds à partir des "
+        "documents de l'entreprise fournis ci-dessous quand il y en a. Raisonne étape "
+        "par étape, puis termine par une ligne « Conclusion : » qui donne la réponse "
+        "et le montant exact en FCFA s'il y en a un. Réponds en français. Si la "
+        "question sort de ton domaine ou que tu n'as pas l'information, dis-le.",
+        "Réécris la conclusion suivante en UNE phrase de moins de 140 caractères, en "
+        "français, en conservant le chiffre exact s'il y en a un. Pas de formatage, "
+        "pas de liste, pas de préambule. Donne uniquement la phrase.",
+    ),
+    "en": (
+        "You are the in-house assistant of an Ivorian SME. Answer from the company "
+        "documents given below when there are any; they are written in French. "
+        "Reason step by step, then end with a line starting \"Conclusion:\" giving the "
+        "answer and the exact amount in FCFA if there is one. Answer in English. If "
+        "the question is outside your scope or you lack the information, say so.",
+        "Rewrite the following conclusion as ONE sentence under 140 characters, in "
+        "English, keeping the exact figure if there is one. No formatting, no list, "
+        "no preamble. Give the sentence only.",
+    ),
+}
+
+_ECRANS = {
+    "fr": {
+        "menu": "Baarali Edge\n1. Etat d'une commande\n2. Signaler une livraison\n3. Poser une question",
+        "num_commande": "Numero de commande :",
+        "introuvable": "Commande {ref} introuvable.",
+        "etat": "{client} — {montant} FCFA HT. Livraison prevue {echeance}. Statut : {statut}.",
+        "num_livree": "Numero de commande livree :",
+        "etats_menu": "1. Livree complete\n2. Livree partielle\n3. Refusee",
+        "etats": {"1": "complete", "2": "partielle", "3": "refusee"},
+        "livraison": "Livraison {ref} enregistree : {etat}. Signale par {tel}. Le bureau est informe.",
+        "question": "Votre question :",
+        "sans_reponse": "Pas de reponse.",
+        "invalide": "Choix invalide.",
+    },
+    "en": {
+        "menu": "Baarali Edge\n1. Order status\n2. Report a delivery\n3. Ask a question",
+        "num_commande": "Order number:",
+        "introuvable": "Order {ref} not found.",
+        "etat": "{client} — {montant} FCFA excl. tax. Due {echeance}. Status: {statut}.",
+        "num_livree": "Delivered order number:",
+        "etats_menu": "1. Delivered in full\n2. Partial delivery\n3. Refused",
+        "etats": {"1": "in full", "2": "partial", "3": "refused"},
+        "livraison": "Delivery {ref} recorded: {etat}. Reported by {tel}. The office is notified.",
+        "question": "Your question:",
+        "sans_reponse": "No answer.",
+        "invalide": "Invalid choice.",
+    },
+}
+
+CONSIGNE_RAISONNER, CONSIGNE_CONDENSER = _CONSIGNES[LANGUE]
+ECRANS = _ECRANS[LANGUE]
+
 COMMANDES = RACINE / "demo" / "commandes.json"
 
 
@@ -211,45 +263,36 @@ def repondre(
     etapes = text.split("*") if text else [""]
 
     if etapes == [""]:
-        return ecran(
-            "CON",
-            "Baarali Edge\n1. Etat d'une commande\n2. Signaler une livraison\n"
-            "3. Poser une question",
-        )
+        return ecran("CON", ECRANS["menu"])
 
     choix = etapes[0]
 
     if choix == "1":
         if len(etapes) == 1:
-            return ecran("CON", "Numero de commande :")
+            return ecran("CON", ECRANS["num_commande"])
         cmd = charger_commandes().get(etapes[1].strip().upper())
         if not cmd:
-            return ecran("END", f"Commande {etapes[1]} introuvable.")
-        return ecran(
-            "END",
-            f"{cmd['client']} — {cmd['montant_fcfa']} FCFA HT. "
-            f"Livraison prevue {cmd['echeance']}. Statut : {cmd['statut']}.",
-        )
+            return ecran("END", ECRANS["introuvable"].format(ref=etapes[1]))
+        return ecran("END", ECRANS["etat"].format(
+            client=cmd["client"], montant=cmd["montant_fcfa"],
+            echeance=cmd["echeance"], statut=cmd["statut"]))
 
     if choix == "2":
         if len(etapes) == 1:
-            return ecran("CON", "Numero de commande livree :")
+            return ecran("CON", ECRANS["num_livree"])
         if len(etapes) == 2:
-            return ecran("CON", "1. Livree complete\n2. Livree partielle\n3. Refusee")
-        etat = {"1": "complete", "2": "partielle", "3": "refusee"}.get(etapes[2], "?")
-        return ecran(
-            "END",
-            f"Livraison {etapes[1]} enregistree : {etat}. "
-            f"Signale par {phone_number}. Le bureau est informe.",
-        )
+            return ecran("CON", ECRANS["etats_menu"])
+        etat = ECRANS["etats"].get(etapes[2], "?")
+        return ecran("END", ECRANS["livraison"].format(
+            ref=etapes[1], etat=etat, tel=phone_number))
 
     if choix == "3":
         if len(etapes) == 1:
-            return ecran("CON", "Votre question :")
+            return ecran("CON", ECRANS["question"])
         question = "*".join(etapes[1:]).strip()
-        return ecran("END", assistant.repondre(question) or "Pas de reponse.")
+        return ecran("END", assistant.repondre(question) or ECRANS["sans_reponse"])
 
-    return ecran("END", "Choix invalide.")
+    return ecran("END", ECRANS["invalide"])
 
 
 # --------------------------------------------------------------------------

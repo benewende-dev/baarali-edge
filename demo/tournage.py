@@ -23,12 +23,15 @@ Ce qui est prouvé, acte par acte :
   4. **La localité**  les documents lus sont sur le disque, et les chiffres du
                       profileur officiel sortent de `bench/raw/`.
 
-Deux langues à l'écran, et ce n'est pas une négligence. **L'habillage est en
-anglais** — titres, commentaires, libellés : c'est la voix du présentateur, et
-le jury lit l'anglais comme le reste du dépôt. **Le produit reste dans sa
-langue** : la session USSD de l'acte 3 se joue en français, parce qu'une PME
-d'Abidjan interroge en français et que le modèle lui répond en français depuis
-ses propres documents. Tout traduire effacerait justement ce qu'on démontre.
+**Tout ce qui s'affiche est en anglais**, comme le reste de ce que lira le jury.
+Un écran qu'il faut traduire en le lisant est un écran qui coûte de l'attention.
+
+Une seule chose reste en français, et c'est la plus intéressante : **les
+documents de l'entreprise**. `commandes.json` est rédigé en français, la
+question est posée en anglais, et le modèle répond en anglais à partir de la
+pièce française. C'est exactement la situation d'une PME d'Abidjan dont les
+documents sont en français et dont l'interlocuteur écrit en anglais — et ça
+démontre le bilinguisme au lieu de le revendiquer.
 
 Usage : .venv/bin/python demo/tournage.py [--repetition]
 
@@ -38,12 +41,18 @@ Wi-Fi. **Ne jamais filmer dans ce mode** — l'acte 1 perdrait son sens.
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 import subprocess
 import sys
 import time
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+
+# Le canal USSD parle anglais **pour la caméra**, avant que `ussd` ne soit
+# importé — ses libellés sont figés au chargement. Le français reste la langue
+# de service par défaut du module ; ce qui change ici, c'est la langue du jury.
+os.environ.setdefault("BAARALI_USSD_LANG", "en")
 
 from ussd import (  # noqa: E402
     CODE_SERVICE,
@@ -118,7 +127,7 @@ def acte_modele(a: Assistant) -> None:
 
 def acte_ussd(a: Assistant) -> None:
     titre(3, f"The same model, reachable by USSD on {CODE_SERVICE}")
-    saisies = ["", "3", "De combien de jours la commande CMD-1042 est-elle en retard ?"]
+    saisies = ["", "3", "How many days late is order CMD-1042?"]
     texte = ""
     for i, saisie in enumerate(saisies):
         texte = saisie if not texte else f"{texte}*{saisie}"
