@@ -3,6 +3,9 @@ model/*.gguf
 model/*.bin
 model/*.safetensors
 
+# Prises de la video de soumission — un .mov n a rien a faire dans un depot de code
+demo/prise-*.mov
+
 # macOS
 .DS_Store
 
