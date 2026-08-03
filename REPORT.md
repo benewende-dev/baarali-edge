@@ -11,8 +11,6 @@
 
 ## Problem
 
-<!-- À remplir à l'étape 5. Matière déjà arrêtée : -->
-
 Small and mid-sized organisations in West Africa — a 40-person distributor in Abidjan, a
 municipal office, a clinic — hold the documents that would make an assistant genuinely useful:
 supplier contracts, invoices, HR policies, meeting notes. Cloud assistants cannot serve them, for
@@ -27,20 +25,151 @@ three reasons that hold simultaneously:
 An assistant that runs on the laptop answers all three at once. The target user is an office
 worker with a refurbished i5 and 8 GB of RAM, working through an outage.
 
-TODO — expand: field context, the USSD channel as the zero-data reach for non-smartphone users.
+The detail that settles the architecture is smaller than any statistic: **the laptop has a
+battery, the fibre box does not.** When the grid fails, a cloud assistant becomes a spinning wheel
+at precisely the moment the work is urgent, while a model living in the laptop's own RAM keeps
+answering. In the 2023 World Bank Enterprise Survey, 80.4 % of Ivorian firms reported electrical
+outages, and affected firms put the loss at 2 % of annual sales. This is not a problem being
+solved away: in February 2026 national demand rose 14 % year on year, and on 1 April 2026 the
+government released 32 billion FCFA as an emergency measure.
+
+Reach beyond the office is the second half of the problem. Coverage is not the bottleneck — 4G
+reaches 93.7 % of the population — but roughly 60 % of Ivorians were still offline in 2024, and a
+storekeeper checking an order does not open a laptop. The channel that already reaches them is
+**USSD**: the short codes that carry more than 22 million active mobile-money accounts in Côte
+d'Ivoire, on any handset, with no app and no data session. A working implementation against the
+real aggregator contract, including the 182-character screen limit, is in [`demo/`](demo/) — with
+an explicit statement of what it does not have, namely a live short code, which requires an
+operator agreement.
+
+Sources for every figure above, and a section stating what this submission does **not** claim, are
+in [`USE_CASE.md`](USE_CASE.md).
 
 ---
 
 ## Design Decisions
 
-<!-- À remplir à l'étape 1 et 2, à partir de bench/resultats.md -->
+Every choice below was made from a measurement, and each is reversible by re-running the script
+named beside it. The full log, including the reasoning we later had to withdraw, is
+[`bench/resultats.md`](bench/resultats.md).
 
-- **Base model:** TODO — chosen from a measured comparison of N candidates, not by reputation.
-- **Parameter range:** TODO — the scoring function assigns 50 % of the weight to throughput and
-  memory, which favours a smaller model than intuition suggests. State the arithmetic.
-- **Quantization:** TODO — Q4_K_M / Q5_K_M / IQ4_XS compared on measured total score.
-- **Importance-matrix calibration:** TODO — calibrated on francophone enterprise text.
-- **Alternatives considered and rejected:** TODO — with the measured reason for each rejection.
+### 1. Base model — Qwen3.5-2B, from five candidates profiled, not from reputation
+
+Five open models between 0.75 B and 4.21 B measured parameters, all at GGUF Q4_K_M, same machine,
+same profiler (`bench/mesurer.py`):
+
+| Candidate | Parameters | Accuracy (`arc_easy`, 200 q) | Throughput | Peak RAM | S_eff |
+|---|---|---|---|---|---|
+| Phi-4-mini | 3.84 B | **0.765** | 20.6 t/s | 3.30 GB | 52.8 |
+| Qwen3.5-4B | 4.21 B | 0.735 | 14.9 t/s | 3.49 GB | 50.1 |
+| SmolLM3-3B | 3.08 B | 0.720 | 25.5 t/s | 3.02 GB | 56.9 |
+| **Qwen3.5-2B** | **1.88 B** | 0.675 | 33.9 t/s | 2.52 GB | 64.1 |
+| Qwen3.5-0.8B | 0.75 B | 0.640 | **65.3 t/s** | **1.21 GB** | **82.7** |
+
+The most accurate model is not the best submission, because `S_perf` is scored **relative to the
+fastest entry received**, not against a fixed bar. We do not control that denominator. Applying the
+official function under three assumptions about it:
+
+| If the fastest entry runs at… | 0.8 B | **2 B** | SmolLM3-3B | Phi-4-mini | 4 B |
+|---|---|---|---|---|---|
+| 65 t/s | **68.8** | 65.3 | 54.9 | 49.2 | 56.5 |
+| 150 t/s | 51.9 | **56.5** | 48.2 | 43.8 | 52.6 |
+| 319 t/s | 44.9 | **52.9** | 45.5 | 41.6 | 51.1 |
+
+319 t/s is not a hypothesis: the 135 M-parameter example model shipped by the organisers reaches it
+on this machine. Qwen3.5-2B wins two scenarios of three and is never poor in the third. The 0.8 B
+wins only if nobody among the entrants submits a fast model — a bet on other people's choices
+rather than on our own work.
+
+The multiple-choice benchmark also misses what a judge will see, so all five candidates answered
+our two real prompts (`bench/repondre.py`, transcripts in `bench/copies/`). Only the two Qwen
+models retained all four facts of `tp_002`; the other three omitted the unsigned supplier contract
+from their summary **and then requested it as missing information**, which the note had supplied.
+
+### 2. Parameter count — 2 B is the trade, stated as arithmetic
+
+Half the score is throughput and memory. Qwen3.5-4B is 6 accuracy points better than our choice —
+0.735 against 0.675 — and still loses on total score, 52.6 against 56.5 in the middle scenario,
+because it runs at 44 % of the speed and takes 1.4× the memory. Accuracy has to buy a great deal
+before it pays for that, and at this scale it does not.
+
+Peak memory is 1 544 MB against a 7 GB ceiling. We are not near the disqualification line, so the
+model size was chosen on score, never out of fear of an overrun.
+
+### 3. Quantisation — IQ4_XS, from all seven variants of the winner
+
+| Variant | Accuracy | Throughput | Peak RAM | S_eff | Total @150 t/s |
+|---|---|---|---|---|---|
+| **IQ4_XS** *(shipped)* | 0.670 | **34.3 t/s** | **1.74 GB** | **75.2** | **55.4** |
+| Q4_K_M | 0.675 | 31.6 t/s | 2.08 GB | 70.2 | 54.1 |
+| UD-Q5_K_XL | **0.680** | 29.0 t/s | 2.11 GB | 69.8 | 53.8 |
+| MTP-Q4_K_M | 0.675 | 31.1 t/s | 2.20 GB | 68.5 | 53.7 |
+| Q5_K_M | 0.670 | 26.7 t/s | 2.01 GB | 71.3 | 53.1 |
+| UD-Q4_K_XL | 0.650 | 29.4 t/s | 2.21 GB | 68.4 | 52.1 |
+| Q3_K_M | 0.630 | 30.7 t/s | 1.93 GB | 72.4 | 52.1 |
+
+Accuracy here is a single deterministic run (temperature 0, fixed seed); throughput and memory are
+medians of three, because one variant read 1.47 GB on its first pass against a true median of
+2.21 GB — a single memory sample would have chosen the wrong model.
+
+**UD-Q5_K_XL is the variant that beats us on accuracy**, 0.680 to 0.670, and it is in this table
+for that reason. It loses by 1.6 points overall: its extra accuracy point is worth 0.5 of final
+score, while the 18 % throughput and 5.4 S_eff it gives up cost 2.1. Three further assumptions
+also failed the measurement — Q5 bought no accuracy at all over IQ4_XS for 25 % more weight;
+"dynamic" UD-Q4_K_XL came out *below* ordinary Q4_K_M at 0.650; and multi-token prediction
+accelerated nothing, because the profiler drives `llama-bench` without the settings that would use
+it, so the extra head is pure weight.
+
+### 4. Importance-matrix calibration — inherited, not ours, and we say so
+
+The shipped file is an importance-matrix quantisation. Read from its own metadata:
+
+```
+quantize.imatrix.file      Qwen3.5-2B-GGUF/imatrix_unsloth.gguf
+quantize.imatrix.dataset   unsloth_calibration_Qwen3.5-2B.txt
+quantize.imatrix.entries_count  186
+quantize.imatrix.chunks_count   80
+```
+
+That calibration set is Unsloth's, and it is **generic English**. Recalibrating the importance
+matrix on francophone enterprise text — the register this submission is actually for — is the one
+technical lever we identified and did not pull. It is the only change that would make us authors
+of these weights rather than their measurers, and we are not going to imply otherwise: this
+submission's contribution is selection, measurement and packaging.
+
+We now have the instrument that would judge such a rebuild honestly
+([`bench/redaction.py`](bench/redaction.py), described below), which is the part that was missing
+when the idea first came up. What is missing now is compute time on an 8 GB laptop before the
+deadline, and we would rather ship a measured model than an unmeasured improvement.
+
+### 5. Sampling — `repeat_penalty = 1.05`, and how we got it wrong first
+
+On input outside its competence the model does not decline, it loops — one phrase repeated until
+the token budget is exhausted — and the official chain applies no repetition penalty by default
+(`accuracy.py` calls `create_completion(temperature=0.0)`; `llama-cpp-python` defaults to
+`repeat_penalty = 1.0`). So the loops we observed are exactly what a grader would see.
+
+An 18-item arithmetic control settled on 1.10. That control was rigorous and off-topic: this domain
+is summarising, drafting and analysis, not arithmetic. Re-measured on a control built for the right
+genre, 1.00, 1.05 and 1.10 are indistinguishable (91 / 90 / 91 %) — but at 1.10 the model answers
+our own published `tp_001` with 63,450 FCFA, from a formula `(30 − 25) / 7` that corresponds to
+nothing in the contract. 1.05 keeps it on the defensible route, removes the in-domain degeneration
+we found (diversity 0.60 → 0.99), and costs one criterion out of 81.
+
+The wrong conclusion is kept in the log with the reasoning that produced it, because a decision
+process that only records its successes cannot be audited.
+
+### 6. Alternatives considered and rejected, each for a measured reason
+
+| Rejected | Measured reason |
+|---|---|
+| Phi-4-mini | Dominated by SmolLM3-3B on both axes — slower (20.6 vs 25.5 t/s) *and* heavier (3.30 vs 3.02 GB). On `tp_001` it read "15 days × 2 % = 30 %", confusing days with weeks. |
+| SmolLM3-3B | A reasoning model: it thinks in English inside a `<think>` block and never concludes. With `/no_think` it finally answers, but prorates 3.57 weeks instead of rounding up, which the clause forbids. |
+| Qwen3.5-4B | The best legal reading of the contract of the five, and still 3.9 points behind on total score at 150 t/s. Accuracy did not pay for 44 % of the speed. |
+| Qwen3.5-0.8B | Wins only in the scenario where no competitor submits a fast model. Choosing it means betting on 1,340 other entrants' choices. |
+| Q3_K_M | The accuracy floor: 0.630, with no compensating gain elsewhere. |
+| Ivorian-language support | Probed and refuted. Asked to identify Dioula it answered "the language of Cameroon"; asked for Wolof, "the language of Tigré". `dyu` was **removed** from `language_scope` rather than left in as an unbacked claim. |
+| Fine-tuning the base model | Out of reach on the hardware available, and it would have consumed the time that went into measurement instead. We would rather be able to defend every number than own a model we could not evaluate. |
 
 ---
 
