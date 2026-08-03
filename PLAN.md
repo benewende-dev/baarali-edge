@@ -79,17 +79,19 @@ pourront pas produire.
       d'exemple : leur liste de contrôle refuse les valeurs par défaut.
 - [ ] **Demander les 5 heures de crédits GPU offertes par Udutech** — c'est gratuit, ça met du
       temps à être accordé, et c'est ce qui rendra un affinage possible sans dépenser un franc
-- [ ] Récupérer le **jeu de validation du domaine Entreprise/PME** (onglet Ressources) — les
-      organisateurs en fournissent un par domaine : on mesurera dessus, pas sur un test générique
+- [x] ~~Récupérer le jeu de validation du domaine Entreprise/PME~~ — **il n'y en a pas pour nous.**
+      `adtc_profiler/accuracy.py` : « the full hidden 30 % validation subset distributed by
+      **judges** », et l'onglet Ressources renvoie 404. Ce qu'on a est la définition du domaine :
+      *summarization, drafting, and analysis for SMEs*. D'où `bench/redaction.py` (étape 5).
 - [x] Compte Hugging Face : **huggingface.co/Benewende-dev** — c'est là que seront publiés les
       poids `.gguf` (dépôt public, gratuit, accessible sans identifiants comme l'exige le gabarit)
 
 **Outillage machine :**
-- [ ] `brew install llama.cpp` → fournit `llama-bench`, exigé par le profileur
-- [ ] Environnement Python **3.11 ou 3.12** (le poste est en 3.14 ; `llama-cpp-python` compile
-      depuis les sources et n'a pas forcément de roue pour 3.14) — via `uv venv --python 3.12`
-- [ ] `pip install "git+https://github.com/Africa-Deep-Tech-Foundation/adtc-profiler.git"`
-- [ ] Un premier run du profileur sur le modèle d'exemple, pour prouver que la chaîne tourne
+- [x] `brew install llama.cpp` → fournit `llama-bench`, exigé par le profileur
+- [x] Environnement Python **3.12** via `uv venv --python 3.12`
+- [x] `pip install "git+https://github.com/Africa-Deep-Tech-Foundation/adtc-profiler.git"`
+- [x] Premier run sur le modèle d'exemple : **319 t/s** pour 135 M de paramètres — le chiffre qui
+      a servi de scénario haut dans toute l'étape 1
 
 ⚠️ **Mémoire** : la machine a 8 Go et a déjà gelé une fois. Pendant les mesures : **rien d'autre
 ne tourne** — ni Docker/Colima, ni Ollama, ni serveur Next.js. Un pic parasite fausse la note.
@@ -100,10 +102,10 @@ ne tourne** — ni Docker/Colima, ni Ollama, ni serveur Next.js. Un pic parasite
 
 On ne choisit pas le modèle de départ par réputation : on le **note** avec le profileur officiel.
 
-- [ ] Sélectionner 5 socles ouverts, licence permissive, couvrant **1 Md à 4 Md** de paramètres
-- [ ] Pour chacun : GGUF Q4_K_M, profileur **complet** (justesse comprise), 3 exécutions, médiane
-- [ ] Consigner dans `bench/resultats.md` : justesse, t/s, pic RAM, température, **score total**
-- [ ] **Décision documentée** : le socle retenu, et pourquoi chaque autre est écarté
+- [x] 5 socles ouverts, de 0,75 à 4,21 Md de paramètres mesurés, licences Apache 2.0 et MIT
+- [x] GGUF Q4_K_M, profileur complet, médiane de 3 pour débit et mémoire
+- [x] Consigné dans `bench/resultats.md`, avec les copies des 5 modèles sur nos 2 prompts réels
+- [x] **Décision : Qwen3.5-2B**, et le motif mesuré de chaque rejet → `REPORT.md` § Design Decisions
 
 *Sortie : un tableau de scores réels — et la moitié du `REPORT.md`, écrite d'avance.*
 
@@ -111,11 +113,15 @@ On ne choisit pas le modèle de départ par réputation : on le **note** avec le
 
 ## Étape 2 — Compresser intelligemment
 
-- [ ] Comparer Q4_K_M / Q5_K_M / IQ4_XS sur le socle retenu (l'IQ4 pèse moins pour une qualité voisine)
-- [ ] Essayer une quantification guidée par **matrice d'importance** (*imatrix*) calibrée sur du
-      texte d'entreprise francophone — même taille, meilleure justesse. Contribution technique
-      défendable devant le jury, et elle joue sur les deux axes à la fois.
-- [ ] Retenir le meilleur score total mesuré, pas le meilleur ressenti
+- [x] **7 variantes** comparées, pas 3 → `IQ4_XS` retenu (55,4 contre 53,8 pour son plus proche
+      rival, UD-Q5_K_XL — qui nous bat pourtant sur la justesse, 0,680 contre 0,670)
+- [ ] **Recalibrer la matrice d'importance sur du texte d'entreprise francophone.** *Seul levier
+      identifié et non tiré.* Le fichier livré **est** déjà en imatrix, mais calibré par Unsloth sur
+      de l'anglais générique (`quantize.imatrix.dataset = unsloth_calibration_Qwen3.5-2B.txt`,
+      80 chunks). C'est la seule modification qui ferait de nous les auteurs des poids. Il manque
+      du temps de calcul, pas l'instrument de mesure : `bench/redaction.py` saurait juger le
+      résultat. Décision à prendre — voir `REPORT.md` § 4.
+- [x] Retenir le meilleur score total mesuré, pas le meilleur ressenti
 
 ---
 
@@ -161,7 +167,7 @@ Ce n'est pas une décoration : c'est l'équivalent de 20 points de justesse, pou
 *Rappel : la qualité de la documentation est comptée dans les 50 % de justesse. Ce n'est pas
 l'emballage du travail, c'en est une partie notée.*
 
-- [ ] `REPORT.md` : problème, décisions de conception, contraintes, **chiffres mesurés**
+- [x] `REPORT.md` : problème, décisions de conception, contraintes, **chiffres mesurés** — complet
 - [x] **Démonstration filmable, en une prise** → `demo/tournage.py`, chronométrée à **25 s** :
       contrôle réseau (refuse de démarrer si la machine répond), `tp_002` généré en flux, session
       USSD complète, puis fichiers locaux + chiffres du profileur. Un seul chargement des poids.
@@ -198,7 +204,7 @@ l'emballage du travail, c'en est une partie notée.*
       arrondit « 3 semaines et 4 jours » à trois semaines entamées). À 1,10 il n'y a plus de
       raisonnement du tout : `(30 − 25)/7`. Aucun des deux n'est taillé sur mesure : ce sont
       des tâches ordinaires du domaine, ce que l'anti-surapprentissage exige.
-- [ ] `REPORT.md` : rédiger la prose des *Design Decisions* (tous les chiffres sont déjà mesurés)
+- [x] `REPORT.md` : prose des *Design Decisions* écrite, six sections, chaque chiffre traçable
 
 ---
 
@@ -212,7 +218,7 @@ mesurent. Donc toute la page se remplit avec un seul `submission.json` et l'URL 
 ⚠️ Les deux prompts sont saisis **deux fois** (Devpost + `metadata.json`) : ils doivent être
 rigoureusement identiques, sans quoi l'audit compare deux choses différentes.
 
-- [ ] Dépôt **public** sur GitHub (`baarali-edge` seul — jamais Baarali-v1)
+- [x] Dépôt **public** : <https://github.com/benewende-dev/baarali-edge> (2 août 2026)
 - [ ] Passer la liste de contrôle du gabarit officiel, ligne par ligne
 - [ ] Étapes 3, 4 et 5 du brouillon Devpost remplies (histoire, vidéo, scores)
 - [ ] Soumettre **avant le 25 août 6 h 45 GMT**
