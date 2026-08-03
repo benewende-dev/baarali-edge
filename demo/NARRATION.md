@@ -1,8 +1,14 @@
 # Voix off — texte à poser sur la prise muette
 
-La prise brute (`bash demo/filmer.sh`) dure ~28 s et n'a pas de son. Ce texte se
-pose dessus au montage. **137 mots, soit ~55 s** à un débit posé de 150 mots par
-minute — largement sous le plafond de 2 minutes du règlement.
+La prise brute (`bash demo/filmer.sh`) dure ~32 s et n'a pas de son. Ce texte se
+pose dessus au montage. **181 mots, soit ~72 s** à un débit posé de 150 mots par
+minute — sous le plafond de 2 minutes du règlement, qui dit *« a short video
+(max 2 minutes) »* : c'est un plafond, pas une durée à remplir.
+
+⚠️ **La voix est plus longue que l'image** (72 s contre 32 s), et c'est voulu :
+le règlement demande *« explaining your solution **and development journey** »*,
+or le parcours ne se filme pas. Au montage, tenir la dernière image pendant les
+segments 5 et 6, ou poser un carton noir avec le lien du dépôt.
 
 **En anglais.** Tous nos fichiers publics le sont, et c'est la langue du jury.
 Le français avec sous-titres anglais serait défendable, mais on ne prend pas ce
@@ -38,10 +44,19 @@ ne les montrera jamais tout seul.
 > median of three runs: thirty-one tokens per second, one point five gigabytes
 > peak, against a seven gigabyte ceiling.
 
-### 5 — carton de fin *(~10 s, 25 mots)*
+### 5 — le parcours, sur la dernière image tenue *(~18 s, 44 mots)*
+
+*C'est le segment que le règlement réclame et que l'écran ne peut pas montrer.*
+
+> Getting here was measurement, not intuition. We profiled five open base models,
+> then all seven quantisations of the winner. One decision we had already
+> published, we later reversed — a second control showed the first had measured
+> the wrong thing.
+
+### 6 — carton de fin *(~10 s, 24 mots)*
 
 > Every number in our report is measured, including the ones that do not flatter
-> us — the repository names the variant that beats us on accuracy.
+> us. The repository names the variant that beats us on accuracy.
 
 ---
 

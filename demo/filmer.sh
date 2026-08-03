@@ -127,7 +127,7 @@ echo "     l'écran est filmé, y compris un navigateur ou une messagerie."
 # qui passe à l'écran — la première prise a ainsi capté un navigateur ouvert sur
 # un compte personnel. Deux conséquences, toutes deux appliquées plus bas :
 # le plafond est court, et le film est **recoupé à la fin réelle de la scène**.
-ARGS=(-v -m -k -V 90)
+ARGS=(-v -m -k -V 75)
 [[ $VOIX -eq 1 ]] && ARGS+=(-g)
 BRUT="${SORTIE%.mov}-brut.mov"
 screencapture "${ARGS[@]}" "$BRUT" &
@@ -150,18 +150,20 @@ fi
 sleep 2   # ne pas couper sur le dernier caractère
 UTILE=$(( $(date +%s) - DEBUT + 2 ))   # durée réelle de la scène, plus le battement
 
-# La fenêtre est rangée AVANT que la capture ne s'arrête : si screencapture
-# s'obstine jusqu'à son plafond, il ne filmera qu'un bureau vide, pas ton travail.
-osascript -e "tell application \"Terminal\" to close (every window whose id is $ID_FENETRE)" >/dev/null 2>&1
-ID_FENETRE=""
-
-for sig in INT TERM KILL; do
-  kill -0 "$PID_CAPTURE" 2>/dev/null || break
-  kill -"$sig" "$PID_CAPTURE" 2>/dev/null
-  for _ in $(seq 1 25); do kill -0 "$PID_CAPTURE" 2>/dev/null || break; sleep 0.2; done
-done
+# On ne tue pas screencapture, on le laisse atteindre son plafond -V.
+# Mesuré le 2 août, dans cet ordre : SIGINT est ignoré (il filme jusqu'au bout),
+# et SIGKILL le tue avant qu'il n'ait refermé le conteneur — zéro fichier. Le
+# laisser finir est donc la seule voie qui produise un .mov valide.
+#
+# La fenêtre de scène reste ouverte pendant cette attente, volontairement : ce
+# que la caméra filme alors, c'est une démonstration terminée, jamais ce qu'il y
+# a derrière. Puis la coupe ffmpeg efface ce rab.
+echo "  scène terminée en $((UTILE - 2)) s — la capture se referme, patiente…"
 wait "$PID_CAPTURE" 2>/dev/null
 PID_CAPTURE=""
+
+osascript -e "tell application \"Terminal\" to close (every window whose id is $ID_FENETRE)" >/dev/null 2>&1
+ID_FENETRE=""
 
 echo
 if [[ ! -s "$BRUT" ]]; then
